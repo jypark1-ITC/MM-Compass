@@ -1,0 +1,7 @@
+storage/work
+storage/backups
+storage/previews
+.venv
+__pycache__
+시연용_샘플파일
+*.bat
