@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% block title %}MM-Compass · {{ meta.title }}{% endblock %}{% block body %}
+<h1>{{ meta.title }} <span class="muted" style="font-size:14px">{{ label }} · {{ meta.meet }}</span></h1>
+<div class="sub"><a href="{{ url_for('weeks') }}">← 주차 목록</a>{% if draft %} · 새 계산본: <a href="{{ url_for('admin_draft', label=label, page='meeting.html') }}" target="_blank">회의용</a> · <a href="{{ url_for('admin_draft', label=label, page='admin.html') }}" target="_blank">관리자</a>{% endif %}
+{% if inp %} · 계산 {{ inp.at }} ({{ inp.by }}){% endif %}</div>
+{% if st.state == 'error' %}<div class="card pv-red"><h2>재계산이 멈췄습니다</h2>
+<table class="errt"><tbody>
+{% if st.step and st.cause %}<tr><th>멈춘 단계</th><td>{{ st.step }}</td></tr>{% endif %}
+<tr><th>원인</th><td><b>{{ st.cause or st.msg }}</b></td></tr>
+{% if st.files %}<tr><th>확인할 파일</th><td><ul style="margin:0;padding-left:18px">{% for f in st.files %}<li>{{ f }}</li>{% endfor %}</ul></td></tr>{% endif %}
+{% if st.hint %}<tr><th>이렇게 해 보세요</th><td>{{ st.hint }}</td></tr>{% endif %}
+</tbody></table>
+<p class="muted">고친 뒤 <a href="{{ url_for('weeks') }}">주차 목록</a>에서 다시 '재계산'을 누르면 됩니다. 이전 게시본은 그대로 남아 있어 회의용 화면에는 영향이 없습니다.</p>
+<details><summary>기술 로그 (원인을 모를 때 캡처해서 보내 주세요)</summary><pre class="log">{{ log }}</pre></details></div>{% endif %}
+{% if ck %}<div class="card"><h2>점검 목록</h2>
+{% if ck.info %}<h3>최근 투입계획 우선 적용</h3><ul>{% for w in ck.info %}<li>{{ w }}</li>{% endfor %}</ul>{% endif %}
+{% if ck.warn %}<h3>반영하지 못한 업로드</h3><ul>{% for w in ck.warn %}<li>{{ w }}</li>{% endfor %}</ul>{% endif %}
+<h3>대기 명단 대조 (통계 파일 기준) · {{ ck.idle|length }}건</h3>
+{% if ck.idle %}<table><thead><tr><th>구분</th><th>내용</th></tr></thead><tbody>{% for x in ck.idle %}<tr><td>{{ x[0] }}</td><td>{{ x[1] }}</td></tr>{% endfor %}</tbody></table>{% else %}<p class="muted">명단 합과 팀 대기가 모두 일치합니다.</p>{% endif %}
+<h3>투입계획 반영 내역 · {{ ck.plan|length }}건</h3>
+<table><thead><tr><th>구분</th><th>대상</th><th>내용</th></tr></thead><tbody>{% for x in ck.plan %}<tr><td>{{ x[0] }}</td><td>{{ x[1] }}</td><td>{{ x[2] }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% if inp %}<div class="card"><h2>이번 계산에 쓴 파일</h2><table><thead><tr><th>자리</th><th>파일</th><th>날짜</th><th>출처</th></tr></thead><tbody>
+{% for u in inp.used %}<tr><td>{{ u.name }}</td><td>{{ u.orig }}</td><td>{{ u.date }}</td><td>{% if u.upload_id %}<span class="st st-반영">{{ u.src }}</span>{% else %}<span class="muted">{{ u.src }}</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% endblock %}

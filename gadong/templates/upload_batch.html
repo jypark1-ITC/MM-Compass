@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}MM-Compass · 팀별 등록 결과{% endblock %}{% block body %}
+<h1>팀별로 나눠 등록했습니다</h1>
+{% set wait = (rows|selectattr('status','in',['확인 대기','제출'])|list) if me()['role']=='admin' else (rows|selectattr('status','equalto','확인 대기')|list) %}
+<div class="sub">{{ rows|length }}팀 · 팀마다 미리보기를 확인하고 아래 <b>[전부 제출]</b>로 한 번에 낼 수 있습니다 · 미리보기는 뒤에서 만들고 있어 몇 분 걸릴 수 있습니다 (새로고침하면 채워집니다)</div>
+<div class="card"><div style="overflow-x:auto"><table><thead><tr><th>팀</th><th>읽은 인원</th><th>상태</th><th>확인할 것</th><th></th></tr></thead><tbody>
+{% for r in rows %}{% set pv = pvs.get(r['id']) %}<tr><td><b>{{ org.label(r['dept']) }}</b> <span class="muted">{{ r['orig_name'].split('[')[0][:30] }}</span></td>
+<td>{% if pv and pv.read %}{{ pv.read|map(attribute='n')|sum }}명{% else %}<span class="muted">미리보기 준비 중…</span>{% endif %}</td>
+<td><span class="st st-{{ css.get(r['status'], 'sub') }}" title="{{ help.get(r['status'], '') }}">{{ r['status'] }}</span></td>
+<td>{% if pv %}{% set rd = pv.get('red') or [] %}{% if rd %}<span style="color:#B42335">꼭 확인 {{ rd|length }}건</span>{% else %}<span class="muted">이상 없음</span>{% endif %}{% else %}<span class="muted">—</span>{% endif %}</td>
+<td><a href="{{ url_for('upload_preview', uid=r['id'], make=1) }}">미리보기 ›</a></td></tr>{% endfor %}
+</tbody></table></div>
+<form method="post" action="{{ url_for('upload_batch_act') }}" style="margin-top:14px"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><input type="hidden" name="ids" value="{{ ids }}">
+<button class="primary" {{ 'disabled' if not wait }}>{{ wait|length }}팀 전부 {{ '반영 확정' if me()['role']=='admin' else '제출' }}</button> <a class="btn" href="{{ url_for('upload') }}">업로드 내역으로</a>
+<span class="muted"> · 미리보기를 안 보고 제출해도 되지만, 팀별 변화(대기·초과)는 한 번 훑어보는 것이 좋습니다</span></form></div>{% endblock %}

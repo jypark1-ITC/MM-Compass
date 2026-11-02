@@ -1,0 +1,51 @@
+:root{--navy:#0F2942;--steel:#2A5A9B;--line:#E3E8EF;--muted:#6B7280;--bg:#F4F6F9;--ok:#1F6F54;--warn:#A2551B}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#1F2937;font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:14px}
+a{color:var(--steel)}
+.top{height:56px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:22px;padding:0 22px;position:sticky;top:0;z-index:5}
+.brand{font-size:19px;font-weight:800;color:var(--navy);text-decoration:none}.brand span{color:var(--steel)}
+.nav{display:flex;gap:2px;height:100%}.nav a{display:flex;align-items:center;padding:0 9px;white-space:nowrap;font-size:13.5px;color:#374151;text-decoration:none;font-weight:600;border-bottom:3px solid transparent}
+.nav a.on,.nav a:hover{color:var(--navy);border-bottom-color:var(--navy)}
+.who{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}.who b{color:#111}
+.chip{display:inline-block;padding:2px 8px;background:#EEF2F7;color:var(--navy);font-size:12px;font-weight:700}
+button,.btn{font:inherit;font-size:13px;font-weight:600;padding:7px 14px;border:1px solid #D1D5DB;background:#fff;color:#374151;cursor:pointer;text-decoration:none;display:inline-block}
+button.primary,.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}button:hover{border-color:var(--navy)}
+main{max-width:1280px;margin:0 auto;padding:24px 22px}
+h1{font-size:22px;color:var(--navy);margin:0 0 6px}.sub{color:var(--muted);margin-bottom:18px}
+.card{background:#fff;border:1px solid var(--line);padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:16px;margin:0 0 12px;color:var(--navy)}
+table{border-collapse:collapse;width:100%}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;font-size:13.5px}
+th{background:#EEF2F7;color:var(--navy);font-size:13px}
+.flash{background:#EAF1FA;border-left:4px solid var(--steel);padding:10px 14px;margin-bottom:14px}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+input,select,textarea{font:inherit;padding:7px 9px;border:1px solid #D1D5DB;width:100%;max-width:420px;background:#fff}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}.row>div{flex:1;min-width:200px}
+.st{display:inline-block;padding:2px 8px;font-size:12px;font-weight:700}.st-접수{background:#EEF2F7;color:#3B597A}.st-반영{background:#E3F1EB;color:var(--ok)}.st-보류{background:#F1EEF8;color:#5B4B8A}.st-반려{background:#F8ECE2;color:var(--warn)}
+.muted{color:var(--muted)}.inline{display:inline}
+.frame{width:100%;height:calc(100vh - 150px);border:1px solid var(--line);background:#fff}
+.login{max-width:380px;margin:12vh auto;background:#fff;border:1px solid var(--line);padding:30px}
+.login input{max-width:none}.login button{width:100%;margin-top:16px;padding:10px}
+.drop{border:2px dashed #CBD3DD;padding:22px;text-align:center;background:#FAFBFD}
+.card h3{font-size:14px;margin:16px 0 8px;color:#374151}.log{white-space:pre-wrap;font-size:12px;background:#F7F8FA;padding:10px;max-height:400px;overflow:auto}
+button[disabled]{opacity:.5;cursor:not-allowed}
+button.danger{color:#A2551B;border-color:#E8C9B3}button.danger:hover{background:#FBF1EA;border-color:#A2551B}
+.st-wait{background:#FFF4D6;color:#8A6100}.st-sub{background:#EEF2F7;color:#3B597A}.st-ok{background:#E3F1EB;color:#1F6F54}.st-hold{background:#F1EEF8;color:#5B4B8A}.st-rej{background:#F8ECE2;color:#A2551B}
+.pv-red{border-left:5px solid #C0392B}.pv-red li{color:#7B241C;margin:4px 0}.pv-yel{border-left:5px solid #D4A017}.pv-ok{border-left:5px solid #1F6F54}
+.pv-head{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.pv-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+td.up{color:#A2551B;font-weight:700}td.dn{color:#2E8B57;font-weight:700}td.num,th.num{text-align:right}
+.st{white-space:nowrap}
+.nbadge{display:inline-block;min-width:18px;padding:0 5px;margin-left:3px;background:#D93B3B;color:#fff;font-style:normal;font-size:11px;font-weight:700;line-height:18px;text-align:center;border-radius:9px}
+.card.pend{border-left:4px solid #1F5FD0}.card.pend h2 b{color:#1F5FD0}.card.pend select{max-width:220px}
+.errt{width:auto;margin-bottom:10px}.errt th{text-align:left;background:none;color:var(--muted);font-weight:600;padding:6px 18px 6px 0;vertical-align:top;white-space:nowrap}.errt td{padding:6px 0;vertical-align:top}
+
+.who{white-space:nowrap}
+.brand{white-space:nowrap}
+.nav .dd{position:relative;display:flex;align-items:stretch}
+.nav .dd>button{display:flex;align-items:center;gap:4px;padding:0 10px;background:none;border:0;border-bottom:3px solid transparent;font:inherit;font-size:13.5px;font-weight:600;color:#374151;cursor:pointer;white-space:nowrap}
+.nav .dd>button i{font-style:normal;font-size:10px;color:var(--muted)}
+.nav .dd.on>button,.nav .dd:hover>button,.nav .dd:focus-within>button{color:var(--navy);border-bottom-color:var(--navy)}
+.nav .ddm{display:none;position:absolute;top:100%;left:0;min-width:180px;background:#fff;border:1px solid var(--line);box-shadow:0 10px 24px rgba(15,41,66,.12);padding:6px 0;z-index:20}
+.nav .dd:hover .ddm,.nav .dd:focus-within .ddm{display:block}
+.nav .ddm a{display:block;height:auto;padding:9px 16px;border:0;font-weight:600}
+.nav .ddm a.on{color:#1F5FD0;background:#F3F7FD}.nav .ddm a:hover{background:#F6F8FB;border:0}
+
+.brand{display:inline-flex;align-items:center}.brand .bi{width:28px;height:28px;border-radius:7px;flex:none;margin-right:9px}

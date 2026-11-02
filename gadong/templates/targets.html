@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}MM-Compass · 목표 가득률{% endblock %}{% block body %}
+<h1>목표 가득률</h1><div class="sub">연초에 한 번 정합니다 · 회의용 화면의 「목표 대비 M/M 갭」에 쓰입니다 · 비워 두면 해당 항목은 표시하지 않습니다</div>
+<div class="card"><form method="post"><input type="hidden" name="csrf" value="{{ csrf_token() }}">
+<div class="row">
+<div><label>전체 기준 가득률 목표 (%)</label><input name="all" inputmode="decimal" value="{{ t.get('all','') }}" placeholder="예: 90" style="max-width:160px"></div>
+<div><label>비매출 모수 제외 가득률 목표 (%)</label><input name="net" inputmode="decimal" value="{{ t.get('net','') }}" placeholder="예: 94" style="max-width:160px"></div>
+</div>
+<p class="muted" style="margin:12px 0 0;font-size:12.5px">지금은 전 본부에 같은 목표를 씁니다. (본부별 목표는 나중에 추가할 수 있도록 저장 구조만 열어 두었습니다.)</p>
+<div style="margin-top:14px"><button class="primary">저장</button></div></form></div>
+<div class="card"><h2 style="font-size:14px">반영 시점</h2><div class="muted" style="font-size:13px;line-height:1.7">저장하면 이미 게시된 주차는 그대로이고, 「주차 · 재계산 · 게시」에서 다시 계산한 주차부터 새 목표로 계산됩니다.</div></div>
+{% endblock %}

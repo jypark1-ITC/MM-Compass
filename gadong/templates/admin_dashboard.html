@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}MM-Compass · 관리자 대시보드{% endblock %}{% block body %}
+<style>/*WIDE_V1*/main{max-width:none!important;padding:16px 20px!important}.frame{height:calc(100vh - 120px)}</style>
+<div class="row" style="align-items:center;margin-bottom:10px"><div><h1>관리자 대시보드</h1><div class="sub" style="margin:0">주간 리포트 · 연간 대시보드 · 인사·프로젝트 정보 (이름 포함 전체 데이터){% if built %} · <b>이 화면 계산본 {{ built }}</b> (재계산·게시한 시각 — 예전 시각이면 [재계산] → [게시]를 다시 해야 최신 화면이 됩니다){% endif %}</div></div>
+<div style="flex:0 0 auto"><form method="get" class="inline"><select name="week" onchange="this.form.submit()" style="width:auto">
+{% for w in weeks %}<option value="{{ w['label'] }}" {{ 'selected' if w['label']==sel }}>{{ w['title'] }}{{ ' · 게시됨' if w['published'] }}</option>{% endfor %}</select></form>
+{% if sel %}<a class="btn" href="{{ url_for('admin_raw', label=sel, page='admin.html') }}" target="_blank">새 창으로 열기</a>{% endif %}</div></div>
+{% if sel %}<iframe class="frame" src="{{ url_for('admin_raw', label=sel, page='admin.html') }}" title="관리자 대시보드"></iframe>
+{% else %}<div class="card">아직 만들어진 주차가 없습니다.</div>{% endif %}{% endblock %}

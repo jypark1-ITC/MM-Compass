@@ -1,0 +1,54 @@
+{% extends "base.html" %}{% block title %}MM-Compass · 반영 미리보기{% endblock %}{% block head %}<style>
+.pv-chg table.chg{table-layout:fixed;width:100%}.pv-chg td,.pv-chg th{white-space:nowrap}.pv-chg td.pjn{overflow:hidden;text-overflow:ellipsis}
+.pv-chg tbody.pp{border-top:2px solid #CBD3DD}.pv-chg tr.ph td{background:#F7F9FC}.pv-chg tr.ph td.muted{white-space:normal;font-size:12.5px}
+.pv-chg tr.ph td:first-child{white-space:normal}.pv-chg td.same{color:#A0A7B2}.pv-chg td.up{color:#B42335;font-weight:700}.pv-chg td.dn{color:#1F6F54;font-weight:700}.pv-chg .sm{font-size:12px}.pv-chg summary{cursor:pointer}
+.kd{display:inline-block;padding:1px 8px;font-size:12px;font-weight:700}.kd-sum{background:#E8EDF4;color:#0F2942}.kd-idle{background:#FDECEC;color:#B42335}.kd-ex{background:#E3F1EB;color:#1F6F54}.kd-pr{background:#FFF4D6;color:#8A6100}.kd-rd{background:#EEF0FB;color:#3F4AA0}
+.tag-new,.tag-out{font-style:normal;font-size:11px;font-weight:700;margin-left:6px;padding:0 6px}.tag-new{background:#E3F1EB;color:#1F6F54}.tag-out{background:#F1F2F4;color:#6B7280}
+</style>{% endblock %}{% block body %}
+{% set u = me() %}
+<h1>반영 미리보기</h1>
+<div class="sub"><a href="{{ url_for('upload') }}">← 업로드 목록</a> · {{ r['orig_name'] }} · {{ r['uploaded_at'] }} · {{ r['display'] }} · 주차 {{ r['week'] }}</div>
+<div class="card pv-head"><span class="st st-{{ css.get(r['status'],'sub') }}">{{ r['status'] }}</span><span class="muted">{{ help.get(r['status'],'') }}</span></div>
+{% if not pv %}<div class="card">{% if wait %}<meta http-equiv="refresh" content="5">미리보기를 만들고 있습니다… 큰 파일은 1~2분 걸립니다. 이 화면은 자동으로 새로고침됩니다. {% else %}미리보기가 아직 없습니다. {% endif %}<a class="btn" href="{{ url_for('upload_preview', uid=r['id'], make=1) }}">지금 만들기</a></div>
+{% elif pv.error %}<div class="card pv-red"><h2>파일을 읽지 못했습니다</h2><p>{{ pv.error }}</p><p class="muted">이 상태로는 반영하지 마세요. 파일을 확인해 다시 올리거나 삭제해 주세요.</p></div>
+{% else %}
+<div class="card"><h2>읽은 내용</h2>
+<p>양식: <b>{{ pv.fmt }}</b>{% if pv.place %} · 반영 자리: <b>{{ pv.place }}</b>{% endif %}{% if pv.dept %} · 부서: {{ pv.dept }}{% endif %}</p>
+{% if pv.prev_name %}<p class="muted">비교 대상(지금 쓰는 파일): {{ pv.prev_name }}</p>{% endif %}
+{% if pv.note %}<p class="muted">{{ pv.note }}</p>{% endif %}
+{% set MS = pv.months or ['10월','11월','12월'] %}{% if pv.read %}<table><thead><tr><th>읽은 팀</th><th class="num">인원</th>{% for m in MS %}<th class="num">{{ m }} 투입MM<br><small>지금 → 새 파일</small></th>{% endfor %}<th class="num">{{ MS[0] }} 가동률<br><small>이 파일 기준</small></th></tr></thead><tbody>
+{% for t in pv.read %}<tr><td><b>{{ t.team }}</b></td><td class="num">{{ t.n }}명</td>
+{% for i in range(MS|length) %}{% set d = t.mm[i]-t.prev[i] %}<td class="num {{ 'up' if d > 0.005 else ('dn' if d < -0.005 else '') }}">{{ '%.2f'|format(t.prev[i]) }} → {{ '%.2f'|format(t.mm[i]) }}</td>{% endfor %}
+<td class="num">{% if t.rate[0] is not none %}{{ '%.1f'|format(t.rate[0]) }}%{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table>{% endif %}</div>
+{% if pv.red %}<div class="card pv-red"><h2>꼭 확인할 것 {{ pv.red|length }}건</h2><ul>{% for x in pv.red %}<li>{{ x }}</li>{% endfor %}</ul></div>
+{% else %}<div class="card pv-ok"><h2>꼭 확인할 것 없음</h2><p class="muted">가동대상·1.00 초과·팀 가동률 100% 초과 문제가 없습니다.</p></div>{% endif %}
+{% if pv.yellow %}<div class="card pv-yel"><h2>참고</h2><ul>{% for x in pv.yellow %}<li>{{ x }}</li>{% endfor %}</ul></div>{% endif %}
+{% if pv.changes %}<div class="card pv-chg"><details open><summary><b>사람별 변화 {{ pv.changes|length }}명</b> <span class="muted">지금 쓰는 파일과 달라진 사람 · 대기·이행·제안·R&amp;D가 프로젝트별로 어떻게 바뀌었는지</span></summary>
+<table class="chg"><colgroup><col style="width:180px"><col style="width:140px"><col style="width:100px"><col>{% for m in MS %}<col style="width:120px">{% endfor %}</colgroup>
+<thead><tr><th>성명</th><th>팀</th><th>구분</th><th>프로젝트</th>{% for m in MS %}<th class="num">{{ m }}<br><small>지금 → 새 파일</small></th>{% endfor %}</tr></thead>
+{% for c in pv.changes %}<tbody class="pp">
+{% set nrow = (c['items']|length if c['items'] else 0) + (1 if c['idle_old'] else 0) + 1 %}
+<tr class="ph"><td rowspan="{{ nrow }}"><b>{{ c.name }}</b>{% if c['T'] %}<div class="muted sm">가동대상 {% for t in c['T'] %}{{ '%.2f'|format(t) }}{{ ' / ' if not loop.last }}{% endfor %}</div>{% endif %}</td><td rowspan="{{ nrow }}">{{ c.team }}</td>
+<td><span class="kd kd-sum">투입 합계</span></td><td class="muted">이행 + 제안 + R&amp;D</td>
+{% for i in range(MS|length) %}{% set d = c.new[i]-c.old[i] %}<td class="num {{ 'up' if d > 0.005 else ('dn' if d < -0.005 else 'same') }}">{{ '%.2f'|format(c.old[i]) }} → {{ '%.2f'|format(c.new[i]) }}</td>{% endfor %}</tr>
+{% if c['idle_old'] %}<tr class="pi"><td><span class="kd kd-idle">대기</span></td><td class="muted">가동대상 − 투입</td>
+{% for i in range(MS|length) %}{% set d = c['idle_new'][i]-c['idle_old'][i] %}<td class="num {{ 'up' if d > 0.005 else ('dn' if d < -0.005 else 'same') }}">{{ '%.2f'|format(c['idle_old'][i]) }} → {{ '%.2f'|format(c['idle_new'][i]) }}</td>{% endfor %}</tr>{% endif %}
+{% for it in c['items'] or [] %}<tr class="pi"><td><span class="kd kd-{{ {'이행':'ex','제안':'pr','R&D·내부과제':'rd'}.get(it.kind,'ex') }}">{{ it.kind }}</span></td><td class="pjn" title="{{ it.pj }}">{{ it.pj }}{% if it.old|sum < 0.005 %} <em class="tag-new">새로 들어감</em>{% elif it.new|sum < 0.005 %} <em class="tag-out">빠짐</em>{% endif %}</td>
+{% for i in range(MS|length) %}{% set d = it.new[i]-it.old[i] %}<td class="num {{ 'up' if d > 0.005 else ('dn' if d < -0.005 else 'same') }}">{{ '%.2f'|format(it.old[i]) }} → {{ '%.2f'|format(it.new[i]) }}</td>{% endfor %}</tr>{% endfor %}
+</tbody>{% endfor %}</table>
+<p class="muted sm" style="margin:8px 0 0">빨강 = 늘어남 · 초록 = 줄어듦 · 회색 = 그대로 · 대기 = 가동대상 − 이 파일의 투입 합계 (가장 최근 재계산 명단 기준)</p></details></div>{% endif %}
+{% endif %}
+<div class="card"><h2>어떻게 할까요?</h2>
+<div class="pv-actions">
+{% if r['status'] == '확인 대기' and (r['user_id'] == u['id'] or u['role'] == 'admin') %}
+<form method="post" action="{{ url_for('upload_act', uid=r['id']) }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button name="act" value="submit" class="primary">{{ '이대로 반영 확정' if u['role']=='admin' else '이대로 제출' }}</button></form>{% endif %}
+{% if u['role'] == 'admin' and r['status'] in ('제출','보류','반려') %}
+<form method="post" action="{{ url_for('upload_act', uid=r['id']) }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button name="act" value="confirm" class="primary">반영 확정</button></form>{% endif %}
+{% if u['role'] == 'admin' and r['status'] != '반려' %}
+<form method="post" action="{{ url_for('upload_act', uid=r['id']) }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button name="act" value="hold">보류</button></form>
+<form method="post" action="{{ url_for('upload_act', uid=r['id']) }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button name="act" value="reject" class="danger">반려 (계산에서 뺌)</button></form>{% endif %}
+{% if u['role'] == 'admin' or (r['user_id'] == u['id'] and r['status'] != '반영') %}
+<form method="post" action="{{ url_for('upload_delete', uid=r['id']) }}" onsubmit="return confirm('이 업로드를 삭제할까요? 원본 파일도 지워집니다.')"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="danger">삭제 (잘못 올림)</button></form>{% endif %}
+</div>
+<p class="muted" style="margin-top:10px">반영 확정한 파일만 재계산에 들어갑니다. 재계산해도 '계산본 게시'를 누르기 전까지 회의용 화면은 바뀌지 않습니다.</p></div>
+{% endblock %}

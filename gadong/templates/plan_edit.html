@@ -1,0 +1,268 @@
+{% extends "base.html" %}{% block title %}MM-Compass · 투입계획 입력{% endblock %}{% block head %}<style>
+.pe-top{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}.pe-top .grow{flex:1}
+.pe-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:4px 0 12px}
+.pe-tools input[type=search]{max-width:220px}
+.pe-legend{font-size:12.5px;color:var(--muted)}.pe-legend i{display:inline-block;width:10px;height:10px;margin:0 4px 0 10px;vertical-align:-1px}
+.pe-how{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.pe-how div{background:#F6F9FD;border:1px solid #DCE6F3;padding:10px 12px;font-size:12.5px;line-height:1.6;color:#374151}.pe-how b{color:var(--navy);display:block;font-size:13px}
+.pe{width:100%;border-collapse:collapse;table-layout:fixed;background:#fff}
+.pe th,.pe td{border-bottom:1px solid var(--line);padding:5px 6px;font-size:13.5px}
+.pe thead th{position:sticky;top:0;background:#EEF2F7;z-index:2;font-weight:700;color:var(--navy);text-align:center}
+.pe th.l,.pe td.l{text-align:left}
+.pe col.c-name{width:150px}.pe col.c-pj{width:auto}.pe col.c-kind{width:74px}.pe col.c-m{width:76px}.pe col.c-x{width:70px}
+.pe tr.ph td{background:#F7F9FC;border-top:2px solid #DCE4EF;font-weight:600}
+.pe tr.ph td.nm b{font-size:14.5px;color:var(--navy)}.pe tr.ph td.nm small{display:block;color:var(--muted);font-weight:500;font-size:12px}
+.pe tr.ph.chgd td.nm{box-shadow:inset 4px 0 0 #1F5FD0}
+.pe td.sm{text-align:center;font-size:12.5px;line-height:1.35}.pe td.sm b{display:block;font-size:13.5px}
+.pe td.ok{background:#E9F5EF}.pe td.ok b{color:#1F6F54}.pe td.idle{background:#FFF6DD}.pe td.idle b{color:#8A6100}.pe td.over{background:#FBE4E6}.pe td.over b{color:#B42335}
+.pe td.past{background:#F3F4F6;color:#9CA3AF;text-align:center}
+.pe .pjw{position:relative}
+.pe input.pj{width:100%;max-width:none;padding:5px 7px}.pe input.mm{width:100%;max-width:none;text-align:right;padding:5px 6px}
+.pe input.mm.chg,.pe input.pj.chg{background:#EAF2FF;border-color:#7DA6E8}
+.pe input.mm.bad{border-color:#D33;box-shadow:inset 0 0 0 1px #D33;background:#FFF1F1}
+.pe input.mm.zero{color:#B8BEC8}
+.pe select{padding:5px 4px;max-width:none}
+.pe .x{border:0;background:none;color:#9CA3AF;font-size:15px;cursor:pointer;padding:2px 4px}.pe .x:hover{color:#B42335}
+.pe .rg{border:1px solid #C9D6EA;background:#fff;color:#1F5FD0;font-size:11.5px;padding:2px 6px;cursor:pointer}.pe .rg:hover{background:#EEF4FF}
+.pe tr.add td{border-bottom:0;padding:2px 6px 10px}.pe tr.add button,.pe .qk{border:1px dashed #9DB6DE;background:#fff;color:#1F5FD0;font:inherit;font-size:12.5px;padding:3px 10px;cursor:pointer}
+.pe .qk{border-style:solid;font-weight:700;margin-left:10px;padding:2px 9px}
+.pe .ps{font-size:12.5px;font-weight:600}.pe .psk{color:#1F6F54}.pe .psi{color:#8A6100}.pe .pso{color:#B42335}
+.pe .code{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.ac{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid #9DB6DE;box-shadow:0 6px 18px rgba(15,41,66,.18);max-height:300px;overflow:auto}
+.ac div{padding:6px 9px;font-size:13px;cursor:pointer;line-height:1.35}.ac div small{display:block;color:var(--muted);font-size:11.5px}
+.ac div.on,.ac div:hover{background:#EEF4FF}.ac div.new{border-top:1px solid var(--line);color:#1F5FD0}
+.ac mark{background:#FFE9A8;padding:0}
+.pop{position:absolute;z-index:30;background:#fff;border:1px solid #9DB6DE;box-shadow:0 8px 22px rgba(15,41,66,.22);padding:12px 14px;width:300px}
+.pop h4{margin:0 0 8px;font-size:13.5px;color:var(--navy)}.pop .r{display:flex;gap:6px;align-items:center;margin:6px 0}.pop .r span{width:52px;font-size:12.5px;color:var(--muted)}
+.pop select,.pop input{width:auto;padding:4px 6px}.pop input.rt{width:70px}.pop .b{display:flex;gap:6px;justify-content:flex-end;margin-top:10px}
+.pop .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+.qm-bg{position:fixed;inset:0;background:rgba(15,41,66,.35);z-index:40;display:flex;align-items:center;justify-content:center}
+.qm{background:#fff;width:560px;max-width:94vw;padding:20px 22px;box-shadow:0 12px 40px rgba(15,41,66,.3)}
+.qm h3{margin:0 0 4px;color:var(--navy)}.qm .sub{margin-bottom:12px}
+.qm .acts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.qm .acts button{padding:10px 6px;font-size:13px;line-height:1.35}.qm .acts button small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+.qm .acts button.on{border-color:#1F5FD0;background:#EEF4FF;color:#1F5FD0}
+.qm .f{display:grid;grid-template-columns:80px 1fr;gap:8px 10px;align-items:center}.qm .f label{margin:0;font-weight:600;font-size:13px}
+.qm .f select,.qm .f input{max-width:none}.qm .f .row2{display:flex;gap:6px;align-items:center}.qm .f .row2 select{width:auto}
+.qm .prev{margin-top:12px;background:#F6F9FD;border:1px solid #DCE6F3;padding:8px 10px;font-size:12.5px;min-height:20px}
+.qm .b{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.pe-bar{position:sticky;bottom:0;background:#0F2942;color:#fff;display:flex;gap:14px;align-items:center;padding:12px 18px;margin-top:14px;z-index:5}
+.pe-bar .grow{flex:1}.pe-bar b{color:#FFD27A}.pe-bar button{background:#1F5FD0;color:#fff;border:0;padding:9px 18px;font:inherit;font-weight:700;cursor:pointer}
+.pe-bar button.ghost{background:transparent;border:1px solid rgba(255,255,255,.5)}.pe-bar button:disabled{opacity:.5;cursor:default}
+.pe-bar .sv{font-size:12px;opacity:.75}
+.draft{display:flex;gap:10px;align-items:center;background:#FFF6DD;border:1px solid #F0D58A;padding:10px 14px;margin-bottom:12px}
+.pe tr.hide{display:none}
+.pe tr.tm td{background:#E6EEF8;border-top:3px solid #1F3B63;color:#0F2942;font-weight:800;font-size:14.5px;padding:8px 10px}.pe tr.tm td small{font-weight:500;color:#4B5E78;margin-left:10px;font-size:12.5px}
+.pe tr.tm td .tc{float:right;font-weight:600;font-size:12.5px;color:#1F5FD0}
+.pe tr.ph .tag{display:inline-block;margin-left:6px;font-size:11.5px;font-weight:600;color:#B25E00;background:#FFF1DD;padding:1px 6px}
+.pe tr.flash td{animation:pf 1.8s ease-out}@keyframes pf{0%{background:#FFE08A}100%{background:inherit}}
+.pe-bar #sum{display:flex;gap:6px;flex-wrap:wrap;align-items:center;max-height:64px;overflow:auto}
+.pe-bar #sum a{color:#fff;background:rgba(255,255,255,.14);padding:2px 8px;cursor:pointer;text-decoration:none;font-size:12.5px;border:1px solid rgba(255,255,255,.25)}.pe-bar #sum a:hover{background:rgba(255,255,255,.3)}
+.pe-bar #sum a small{opacity:.7;margin-left:4px}
+@media (max-width:1000px){.pe-how{grid-template-columns:1fr 1fr}}
+</style>{% endblock %}{% block body %}
+<h1>투입계획 입력</h1>
+<div class="sub">엑셀 없이 이 화면에서 바로 고칩니다 · 저장하면 표준 양식 파일로 만들어져 <b>반영 미리보기 → 제출 → 관리자 반영 확정</b> 순서로 똑같이 처리됩니다 · 당월~12월만 고칠 수 있습니다</div>
+{% if opts %}<form class="card pe-top" method="get"><div class="grow"><label>담당 범위</label><select name="dept" onchange="this.form.submit()"><option value="">부서 선택</option>
+{% for o in opts %}<option value="{{ o }}" {{ 'selected' if o == dept }}>{{ '내 담당 전체' if o == ALL else o }}</option>{% endfor %}</select></div></form>{% endif %}
+{% if err %}<div class="card pv-red">{{ err }}</div>{% endif %}
+{% if data %}
+<div class="pe-how">
+<div><b>① 바뀐 사람만</b>이름 옆 <b style="display:inline">[빠른 변경]</b> → 새 프로젝트 시작 · 종료 · 비율 변경 · 대기 중 하나만 고르면 끝</div>
+<div><b>② 기간으로 한 번에</b>프로젝트 줄의 <b style="display:inline">[기간]</b> → 시작월~종료월 · 비율(예: 0.5)만 넣으면 월 칸이 채워짐</div>
+<div><b>③ 프로젝트는 검색해서</b>이름·코드·고객사 일부만 쳐도 목록이 뜸 → 고르면 코드 자동. 목록에 없으면 새 프로젝트로</div>
+<div><b>④ 엑셀처럼</b>프로젝트·구분·월 칸 모두 방향키·Enter로 이동, 엑셀에서 여러 칸 복사해 붙여넣기 OK (프로젝트명·구분·MM 순서). 입력은 자동 임시저장</div>
+</div>
+<div id="draft"></div>
+<div class="card">
+<div class="pe-tools"><b>{{ '내 담당 전체' if dept == ALL else dept }}</b><a href="{{ url_for('plan_template', dept=dept) }}" style="font-size:12.5px">⬇ 엑셀 템플릿{% if data.teams|length > 1 %} (한 시트 · 팀 열){% endif %}</a><span class="muted">· {{ data.teams|length }}팀 · {{ data.people|length }}명 · 기준 계산본 {{ data.label }}</span>
+{% if data.teams|length > 1 %}<select id="tf" style="width:auto;max-width:300px" title="팀 보기"><option value="">모든 팀 한 화면에</option>{% for t in data.teams %}<option value="{{ t.key }}">{{ t.label }} ({{ t.n }}명)</option>{% endfor %}</select>{% endif %}
+<input type="search" id="q" placeholder="이름·팀·프로젝트 찾기"><label class="muted"><input type="checkbox" id="onlyIdle"> 대기 있는 사람만</label><label class="muted"><input type="checkbox" id="onlyChg"> 고친 사람만</label>
+<span class="pe-legend"><i style="background:#E9F5EF"></i>대기 없음 (다 투입)<i style="background:#FFF6DD"></i>대기 있음<i style="background:#FBE4E6"></i>초과 투입 (빨간 칸)</span></div>
+<div class="scroll"><table class="pe" id="pe"><colgroup><col class="c-name"><col class="c-pj"><col class="c-kind"><col class="c-m" span="{{ 12 - data.cur + 2 }}"><col class="c-x"></colgroup>
+<thead><tr><th class="l">성명</th><th class="l">프로젝트 <small style="font-weight:500;color:var(--muted)">(사람 줄 = 월별 투입 합계와 가동대상 대비 상태)</small></th><th>구분</th><th>{{ data.cur - 1 }}월<br><small>실적</small></th>{% for m in range(data.cur, 13) %}<th>{{ m }}월{% if m == data.cur %}<br><small>당월</small>{% endif %}</th>{% endfor %}<th></th></tr></thead>
+<tbody id="tb"></tbody></table></div>
+</div>
+<div class="pe-bar"><span class="grow" id="sum"><span>고친 사람 <b>0</b>명</span></span><span class="sv" id="sv"></span><button class="ghost" id="reset">되돌리기</button>{% if data.teams|length > 1 %}<label style="font-size:12.5px;display:inline-flex;align-items:center;gap:4px;margin-right:8px" title="체크하지 않으면 고친 팀만 저장·제출됩니다"><input type="checkbox" id="rest"> 안 고친 팀도 지금 값 그대로 함께 저장</label>{% endif %}<button id="save">저장하고 미리보기</button></div>
+<script>
+const DATA={{ data|tojson }}, CUR=DATA.cur, MS=[...Array(13-CUR).keys()].map(i=>CUR+i), DEPT={{ dept|tojson }}, CSRF={{ csrf_token()|tojson }};
+const PJ=Object.fromEntries(DATA.projects.map(p=>[p.pj,p]));
+const ORIG=JSON.stringify(DATA.people), O=JSON.parse(ORIG); let P=JSON.parse(ORIG);
+const DK='gadong_pe:'+DEPT+':'+DATA.label;
+const f2=v=>(Math.round(v*100)/100).toFixed(2);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function sumM(p,i){return p.lines.reduce((a,l)=>a+(+l.mm[i]||0),0)}
+function chg(pi){return JSON.stringify(P[pi])!==JSON.stringify(O[pi])}
+function stCell(p,i){const t=p.T[i],s=sumM(p,i),idle=t-s;const c=s>t+0.005?'over':(idle>0.005?'idle':'ok');
+  return `<td class="sm ${c}"><b>${f2(s)}</b>${c==='over'?'초과 '+f2(s-t):(c==='idle'?'대기 '+f2(idle):'대상 '+f2(t))}</td>`}
+function pstat(p){const ov=[],id=[];MS.forEach(m=>{const s=sumM(p,m-1),t=p.T[m-1];if(s>t+0.005)ov.push(`${m}월 ${f2(s-t)}`);else if(t-s>0.005)id.push(`${m}월 ${f2(t-s)}`)});
+  if(ov.length)return `<span class="pso">초과 투입 · ${ov.join(' · ')}</span>`;if(id.length)return `<span class="psi">대기 · ${id.join(' · ')}</span>`;
+  return `<span class="psk">✓ 대기 없음</span>`}
+function mopts(sel,from){return MS.filter(m=>!from||m>=from).map(m=>`<option value="${m}" ${m===sel?'selected':''}>${m}월</option>`).join('')}
+const TN={};DATA.teams.forEach(t=>TN[t.key]=t);
+function render(){const tb=document.getElementById('tb');let h='';
+  P.forEach((p,pi)=>{
+    if(DATA.teams.length>1&&(pi===0||P[pi-1].tk!==p.tk)){const t=TN[p.tk]||{};h+=`<tr class="tm" data-tkrow="${esc(p.tk)}"><td colspan="${MS.length+5}">${esc(p.tl)}<small>${t.n||0}명</small><span class="tc" data-tc="${esc(p.tk)}"></span></td></tr>`}
+    h+=`<tr class="ph${chg(pi)?' chgd':''}" data-p="${pi}"><td class="nm l"><b>${esc(p.name)}</b>${DATA.teams.length>1?'':`<small>${esc(p.team)}</small>`}${p.tag?`<span class="tag" title="인사자료 기준 가동대상이 이 달까지/부터입니다">${esc(p.tag)}</span>`:''}</td><td class="l"><span class="ps">${pstat(p)}</span><button class="qk" data-qk="${pi}">빠른 변경</button></td><td></td>`+
+       `<td class="past">${f2(sumM(p,CUR-2))}<br><small>/${f2(p.T[CUR-2])}</small></td>`+MS.map(m=>stCell(p,m-1)).join('')+`<td></td></tr>`;
+    p.lines.forEach((l,li)=>{const ol=(O[pi].lines[li]||{mm:[]});
+      h+=`<tr class="ln" data-p="${pi}"><td></td><td class="l"><div class="pjw"><input class="pj${(ol.pj||'')!==l.pj?' chg':''}" autocomplete="off" value="${esc(l.pj)}" data-p="${pi}" data-l="${li}" placeholder="프로젝트 이름·코드·고객사로 검색"></div><span class="code">${l.code?esc(l.code):(l.pj?'코드 없음 · 새 프로젝트':'')}</span></td>`+
+         `<td><select data-p="${pi}" data-l="${li}" class="kd">${['이행','제안','R&D'].map(k=>`<option ${k===l.kind?'selected':''}>${k}</option>`).join('')}</select></td>`+
+         `<td class="past">${f2(+l.mm[CUR-2]||0)}</td>`+
+         MS.map(m=>{const v=+l.mm[m-1]||0;return `<td><input class="mm${(+ol.mm[m-1]||0)!==v?' chg':''}${v?'':' zero'}" inputmode="decimal" value="${f2(v)}" data-p="${pi}" data-l="${li}" data-m="${m-1}"></td>`}).join('')+
+         `<td><button class="rg" data-rg="${pi}:${li}" title="기간·비율로 한 번에 채우기">기간</button><button class="x" title="이 줄 삭제" data-del="${pi}:${li}">✕</button></td></tr>`});
+    h+=`<tr class="add" data-p="${pi}"><td></td><td colspan="${MS.length+4}"><button data-add="${pi}">+ 프로젝트 추가</button></td></tr>`});
+  tb.innerHTML=h; marks(); filt(); upd()}
+function marks(){P.forEach((p,pi)=>MS.forEach(m=>{const bad=sumM(p,m-1)>p.T[m-1]+0.005;
+  document.querySelectorAll(`input.mm[data-p="${pi}"][data-m="${m-1}"]`).forEach(x=>x.classList.toggle('bad',bad&&+x.value>0))}))}
+let svT=null;
+function upd(){const ch=P.map((p,i)=>chg(i)?i:-1).filter(i=>i>=0),n=ch.length;
+  document.getElementById('sum').innerHTML=`<span>고친 사람 <b>${n}</b>명${n?' :':''}</span>`+ch.slice(0,60).map(i=>`<a data-jump="${i}" title="${esc(P[i].tl)} · 누르면 그 사람 줄로 이동">${esc(P[i].name)}${DATA.teams.length>1?`<small>${esc(P[i].team)}</small>`:''}</a>`).join('')+(n>60?`<span>… 외 ${n-60}명</span>`:'');
+  document.getElementById('save').disabled=!n;teamCounts();
+  clearTimeout(svT);svT=setTimeout(()=>{try{if(n){localStorage.setItem(DK,JSON.stringify({at:new Date().toLocaleString('ko-KR'),P}));document.getElementById('sv').textContent='임시저장됨 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}else{localStorage.removeItem(DK);document.getElementById('sv').textContent=''}}catch(e){}},400)}
+function teamCounts(){if(DATA.teams.length<2)return;const c={};P.forEach((p,i)=>{if(chg(i))c[p.tk]=(c[p.tk]||0)+1});document.querySelectorAll('[data-tc]').forEach(e=>{const k=c[e.dataset.tc];e.textContent=k?`고친 사람 ${k}명`:''})}
+function jumpTo(pi){const tf=document.getElementById('tf');if(tf&&tf.value&&tf.value!==P[pi].tk)tf.value='';['q'].forEach(id=>document.getElementById(id).value='');document.getElementById('onlyIdle').checked=false;document.getElementById('onlyChg').checked=false;filt();
+  const tr=document.querySelector(`tr.ph[data-p="${pi}"]`);if(!tr)return;tr.scrollIntoView({block:'center',behavior:'smooth'});tr.classList.remove('flash');void tr.offsetWidth;tr.classList.add('flash')}
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-jump]');if(a){e.preventDefault();jumpTo(+a.dataset.jump)}});
+function refreshHead(pi){const tr=document.querySelector(`tr.ph[data-p="${pi}"]`);const p=P[pi];const cells=tr.querySelectorAll('td.sm');MS.forEach((m,k)=>{cells[k].outerHTML=stCell(p,m-1)});tr.querySelector('.ps').innerHTML=pstat(p);tr.classList.toggle('chgd',chg(pi));marks();upd()}
+function setMM(inp,v){const pi=+inp.dataset.p,l=P[pi].lines[+inp.dataset.l],m=+inp.dataset.m;v=Math.max(0,Math.min(1,Math.round((+v||0)*10000)/10000));l.mm[m]=v;
+  inp.value=f2(v);inp.classList.toggle('chg',(+((O[pi].lines[+inp.dataset.l]||{mm:[]}).mm[m])||0)!==v);inp.classList.toggle('zero',!v)}
+// ---- 입력 ----
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset.p===undefined)return;const pi=+t.dataset.p,l=P[pi].lines[+t.dataset.l];
+  if(t.classList.contains('mm')){const v=parseFloat(t.value.replace(',','.'));l.mm[+t.dataset.m]=isNaN(v)?0:Math.max(0,Math.min(1,v));t.classList.add('chg');refreshHead(pi)}
+  else if(t.classList.contains('pj')){l.pj=t.value;l.code='';t.closest('td').querySelector('.code').textContent=t.value?'코드 없음 · 새 프로젝트':'';t.classList.add('chg');upd();ac.show(t)}});
+document.addEventListener('focusout',e=>{const t=e.target;if(t.classList&&t.classList.contains('mm'))setMM(t,t.value)});
+document.addEventListener('focusin',e=>{const t=e.target;if(t.classList&&t.classList.contains('mm'))setTimeout(()=>t.select(),0);});
+document.addEventListener('dblclick',e=>{if(e.target.classList&&e.target.classList.contains('pj'))ac.show(e.target)});
+document.addEventListener('mouseup',e=>{const t=e.target;if(t.classList&&t.classList.contains('pj')&&!t.value)ac.show(t)});
+document.addEventListener('change',e=>{const t=e.target;if(t.classList.contains('kd')){P[+t.dataset.p].lines[+t.dataset.l].kind=t.value;refreshHead(+t.dataset.p)}});
+// ---- 엑셀처럼: 프로젝트·구분·월 칸 모두 방향키·Enter 이동, 여러 칸 붙여넣기 ----
+const isCell=t=>t&&t.classList&&(t.classList.contains('mm')||t.classList.contains('pj')||t.classList.contains('kd'));
+function grid(){return [...document.querySelectorAll('#tb tr.ln:not(.hide)')].map(tr=>[tr.querySelector('input.pj'),tr.querySelector('select.kd'),...tr.querySelectorAll('input.mm')])}
+function pos(el){const g=grid();for(let r=0;r<g.length;r++){const c=g[r].indexOf(el);if(c>=0)return [g,r,c]}return [g,-1,-1]}
+function atStart(t){return t.tagName==='SELECT'||(t.selectionStart===0&&t.selectionEnd===0)||(t.selectionStart===0&&t.selectionEnd===t.value.length)}
+function atEnd(t){return t.tagName==='SELECT'||(t.selectionStart===t.value.length)||(t.selectionStart===0&&t.selectionEnd===t.value.length)}
+document.addEventListener('keydown',e=>{const t=e.target;if(!isCell(t))return;if(t.classList.contains('pj')&&ac.box)return;
+  const [g,r,c]=pos(t);if(r<0)return;let nr=r,nc=c;
+  if(e.key==='ArrowDown'||(e.key==='Enter'&&!e.shiftKey))nr=r+1;else if(e.key==='ArrowUp'||(e.key==='Enter'&&e.shiftKey))nr=r-1;
+  else if(e.key==='ArrowRight'&&atEnd(t))nc=c+1;else if(e.key==='ArrowLeft'&&atStart(t))nc=c-1;else return;
+  if(nr<0||nr>=g.length||nc<0||nc>=g[nr].length){if(t.tagName==='SELECT')e.preventDefault();return}
+  e.preventDefault();if(t.classList.contains('mm'))setMM(t,t.value);g[nr][nc].focus()});
+const KN=v=>{v=String(v||'').trim();return /r\s*&\s*d|내부|비매출/i.test(v)?'R&D':(/제안|영업/.test(v)?'제안':'이행')};
+document.addEventListener('paste',e=>{const t=e.target;if(!isCell(t))return;const txt=(e.clipboardData||window.clipboardData).getData('text');
+  if(!/[\t\n]/.test(txt.replace(/\n$/,'')))return;e.preventDefault();ac.close();const rows=txt.replace(/\r/g,'').replace(/\n$/,'').split('\n').map(r=>r.split('\t'));
+  const [g,r,c]=pos(t);const touched=new Set();let n=0;
+  rows.forEach((row,i)=>row.forEach((v,j)=>{const x=(g[r+i]||[])[c+j];if(!x)return;const pi=+x.dataset.p,l=P[pi].lines[+x.dataset.l];touched.add(pi);n++;
+    if(x.classList.contains('mm')){const f=parseFloat(String(v).replace(',','.').trim());setMM(x,isNaN(f)?0:f)}
+    else if(x.classList.contains('pj')){const nm=String(v).trim(),k=PJ[nm];l.pj=nm;l.code=k?k.code:'';if(k)l.kind=k.kind}
+    else if(x.classList.contains('kd')){l.kind=KN(v)}}));
+  render();touched.forEach(pi=>refreshHead(pi));flash(`${n}칸 붙여넣었습니다`)});
+function flash(msg){const s=document.getElementById('sv');s.textContent=msg;setTimeout(()=>upd(),1600)}
+// ---- 프로젝트 검색 (이름·코드·고객사) ----
+const ac={box:null,inp:null,items:[],i:0,
+  show(inp){this.close();this.inp=inp;const q=inp.value.trim().toLowerCase(),toks=q.split(/\s+/).filter(Boolean);
+    let L=DATA.projects.filter(p=>{const s=(p.pj+' '+(p.code||'')+' '+(p.cust||'')).toLowerCase();return toks.every(k=>s.includes(k))});
+    const mine=new Set(P[+inp.dataset.p].lines.map(l=>l.pj));L.sort((a,b)=>(a.cp?1:0)-(b.cp?1:0)||a.pj.localeCompare(b.pj));L=L.slice(0,40);
+    this.items=L.map(p=>({p}));if(q&&!PJ[inp.value.trim()])this.items.push({nw:inp.value.trim()});
+    if(!this.items.length){return}
+    const hl=s=>{let r=esc(s);toks.forEach(k=>{r=r.replace(new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`)});return r};
+    const b=document.createElement('div');b.className='ac';
+    b.innerHTML=this.items.map((it,k)=>it.nw?`<div class="new" data-k="${k}">+ 새 프로젝트로 입력: <b>${esc(it.nw)}</b><small>CP에 아직 없으면 이렇게 넣고, 코드는 나중에 관리자가 맞춥니다</small></div>`
+      :`<div data-k="${k}">${hl(it.p.pj)}${mine.has(it.p.pj)?' <small style="display:inline">· 이미 있음</small>':''}<small>${hl(it.p.code||'코드 없음')} · ${it.p.kind}${it.p.cust?' · '+hl(it.p.cust):''}${it.p.cp?' · CP 목록':''}</small></div>`).join('');
+    inp.parentNode.appendChild(b);this.box=b;this.i=q?0:-1;this.hi();
+    b.addEventListener('mousedown',e=>{const d=e.target.closest('[data-k]');if(d){e.preventDefault();this.pick(+d.dataset.k)}})},
+  hi(){if(!this.box)return;[...this.box.children].forEach((d,k)=>d.classList.toggle('on',k===this.i));const o=this.box.children[this.i];if(o)o.scrollIntoView({block:'nearest'})},
+  pick(k){const it=this.items[k],inp=this.inp,pi=+inp.dataset.p,l=P[pi].lines[+inp.dataset.l];
+    if(it.nw){l.pj=it.nw;l.code=''}else{l.pj=it.p.pj;l.code=it.p.code||'';l.kind=it.p.kind}
+    this.close();render();const ni=document.querySelector(`input.mm[data-p="${pi}"][data-l="${P[pi].lines.indexOf(l)}"]`);if(ni)ni.focus();refreshHead(pi)},
+  close(){if(this.box)this.box.remove();this.box=null}};
+document.addEventListener('keydown',e=>{if(!ac.box||e.target!==ac.inp)return;
+  if(e.key==='ArrowDown'){e.preventDefault();ac.i=Math.min(ac.items.length-1,ac.i+1);ac.hi()}else if(e.key==='ArrowUp'){e.preventDefault();ac.i=Math.max(0,ac.i-1);ac.hi()}
+  else if(e.key==='Enter'){e.preventDefault();if(ac.i>=0)ac.pick(ac.i)}else if(e.key==='Escape')ac.close()});
+document.addEventListener('focusout',e=>{if(e.target===ac.inp)setTimeout(()=>ac.close(),120)});
+// ---- 기간으로 채우기 ----
+let pop=null;function closePop(){if(pop)pop.remove();pop=null}
+function span(l){const nz=MS.filter(m=>(+l.mm[m-1]||0)>0);return nz.length?[nz[0],nz[nz.length-1],+l.mm[nz[0]-1]]:[CUR,12,1]}
+function fillRange(l,a,b,r){MS.forEach(m=>{l.mm[m-1]=(m>=a&&m<=b)?r:0})}
+function openRange(btn,pi,li){closePop();const l=P[pi].lines[li];const [a,b,r]=span(l);pop=document.createElement('div');pop.className='pop';
+  pop.innerHTML=`<h4>기간으로 채우기 · ${esc(l.pj||'프로젝트')}</h4><div class="r"><span>기간</span><select class="a">${mopts(a)}</select> ~ <select class="b">${mopts(b)}</select></div>
+  <div class="r"><span>비율</span><input class="rt" inputmode="decimal" value="${f2(r)}"> MM / 월</div><div class="hint">예: 반만 투입 0.5 · 전부 1.00 · 기간 밖의 달(당월~12월)은 0으로 바뀝니다</div>
+  <div class="b"><button class="c">취소</button><button class="primary ok">채우기</button></div>`;
+  document.body.appendChild(pop);const rc=btn.getBoundingClientRect();pop.style.left=(scrollX+Math.min(rc.right-300,innerWidth-320))+'px';pop.style.top=(scrollY+rc.bottom+4)+'px';
+  pop.querySelector('.rt').focus();pop.querySelector('.rt').select();
+  pop.querySelector('.c').onclick=closePop;
+  const ok=()=>{const A=+pop.querySelector('.a').value,B=+pop.querySelector('.b').value,R=Math.max(0,Math.min(1,parseFloat(pop.querySelector('.rt').value.replace(',','.'))||0));
+    if(B<A){alert('종료월이 시작월보다 앞입니다.');return}fillRange(l,A,B,R);closePop();render();refreshHead(pi)};
+  pop.querySelector('.ok').onclick=ok;pop.addEventListener('keydown',e=>{if(e.key==='Enter')ok();if(e.key==='Escape')closePop()})}
+document.addEventListener('mousedown',e=>{if(pop&&!pop.contains(e.target)&&!e.target.dataset.rg)closePop()});
+// ---- 빠른 변경 (바뀐 사람만) ----
+function openQuick(pi){const p=P[pi];const bg=document.createElement('div');bg.className='qm-bg';
+  const lines=p.lines.map((l,li)=>({l,li})).filter(x=>x.l.pj);
+  const lo=lines.map(x=>`<option value="${x.li}">${esc(x.l.pj)}</option>`).join('')||'<option value="">(프로젝트 없음)</option>';
+  bg.innerHTML=`<div class="qm"><h3>빠른 변경 · ${esc(p.name)}</h3><div class="sub">${esc(p.team)} · 바뀐 것 하나만 고르면 월 칸은 자동으로 채워집니다</div>
+  <div class="acts"><button data-a="new" class="on">새 프로젝트 시작<small>투입 추가</small></button><button data-a="end">프로젝트 종료<small>이후 0으로</small></button><button data-a="rate">비율 변경<small>예: 1.0 → 0.5</small></button><button data-a="idle">대기로 전환<small>그 달부터 전부 0</small></button></div>
+  <div class="f" id="qf"></div><div class="prev" id="qp"></div><div class="b"><button class="c">취소</button><button class="primary ok">적용</button></div></div>`;
+  document.body.appendChild(bg);let A='new',np={pj:'',code:'',kind:'이행'};
+  const F=bg.querySelector('#qf'),PV=bg.querySelector('#qp');
+  function form(){bg.querySelectorAll('.acts button').forEach(b=>b.classList.toggle('on',b.dataset.a===A));
+    if(A==='new')F.innerHTML=`<label>프로젝트</label><div class="pjw" style="position:relative"><input class="qpj" autocomplete="off" placeholder="이름·코드·고객사로 검색"></div>
+      <label>기간</label><div class="row2"><select class="a">${mopts(CUR)}</select> ~ <select class="b">${mopts(12)}</select></div>
+      <label>비율</label><div class="row2"><input class="rt" inputmode="decimal" value="1.00" style="width:80px"> MM / 월 <label style="font-weight:400;margin-left:8px"><input type="checkbox" class="sh" checked style="width:auto"> 다른 프로젝트에서 그만큼 빼기</label></div>`;
+    else if(A==='end')F.innerHTML=`<label>프로젝트</label><select class="li">${lo}</select><label>마지막 달</label><div class="row2"><select class="b">${mopts(CUR)}</select> 까지 투입 (그 다음 달부터 0)</div>`;
+    else if(A==='rate')F.innerHTML=`<label>프로젝트</label><select class="li">${lo}</select><label>적용 기간</label><div class="row2"><select class="a">${mopts(CUR)}</select> ~ <select class="b">${mopts(12)}</select></div>
+      <label>새 비율</label><div class="row2"><input class="rt" inputmode="decimal" value="0.50" style="width:80px"> MM / 월</div>`;
+    else F.innerHTML=`<label>대기 시작</label><div class="row2"><select class="a">${mopts(CUR)}</select> 부터 모든 프로젝트 0</div>`;
+    const q=F.querySelector('.qpj');if(q){q.value=np.pj;q.addEventListener('input',()=>{np={pj:q.value,code:'',kind:'이행'};showQ(q);prev()});q.addEventListener('focus',()=>showQ(q))}
+    const ls=F.querySelector('select.li');if(ls&&(A==='rate'||A==='end')){const set=()=>{const l=p.lines[+ls.value];if(!l)return;const [a,b,r]=span(l);const sa=F.querySelector('.a'),sb=F.querySelector('.b');if(sa)sa.value=Math.max(a,CUR);if(sb)sb.value=b;prev()};ls.addEventListener('change',set);set()}
+    F.querySelectorAll('select,input').forEach(x=>x.addEventListener('input',prev));prev()}
+  let qb=null;function showQ(q){if(qb)qb.remove();const s=q.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const L=DATA.projects.filter(x=>{const t=(x.pj+' '+(x.code||'')+' '+(x.cust||'')).toLowerCase();return s.every(k=>t.includes(k))}).slice(0,30);
+    qb=document.createElement('div');qb.className='ac';qb.innerHTML=L.map((x,k)=>`<div data-k="${k}">${esc(x.pj)}<small>${esc(x.code||'코드 없음')} · ${x.kind}${x.cust?' · '+esc(x.cust):''}</small></div>`).join('')+(q.value.trim()&&!PJ[q.value.trim()]?`<div class="new" data-k="-1">+ 새 프로젝트로: <b>${esc(q.value.trim())}</b></div>`:'');
+    if(!qb.innerHTML){qb=null;return}q.parentNode.appendChild(qb);
+    qb.addEventListener('mousedown',e=>{const d=e.target.closest('[data-k]');if(!d)return;e.preventDefault();const k=+d.dataset.k;np=k<0?{pj:q.value.trim(),code:'',kind:'이행'}:{...L[k]};q.value=np.pj;qb.remove();qb=null;prev()});
+    q.addEventListener('blur',()=>setTimeout(()=>{if(qb){qb.remove();qb=null}},150),{once:true})}
+  function vals(){const g=c=>F.querySelector(c);return {a:g('.a')?+g('.a').value:CUR,b:g('.b')?+g('.b').value:12,r:g('.rt')?Math.max(0,Math.min(1,parseFloat(g('.rt').value.replace(',','.'))||0)):0,li:g('select.li')?+g('select.li').value:-1,sh:g('.sh')?g('.sh').checked:false}}
+  function apply(dry){const v=vals();const Q=JSON.parse(JSON.stringify(p));
+    if(A==='new'){if(!np.pj)return {err:'프로젝트를 고르거나 입력해 주세요.'};if(v.b<v.a)return {err:'종료월이 시작월보다 앞입니다.'};
+      let l=Q.lines.find(x=>x.pj===np.pj);if(!l){l={pj:np.pj,code:np.code||'',kind:np.kind||'이행',mm:Array(12).fill(0)};Q.lines.push(l)}
+      MS.forEach(m=>{if(m<v.a||m>v.b)return;const add=v.r-(+l.mm[m-1]||0);l.mm[m-1]=v.r;
+        if(v.sh&&add>0){let need=Math.max(0,sumM(Q,m-1)-Q.T[m-1]);for(const o of Q.lines){if(o===l||need<=0.0001)continue;const cut=Math.min(+o.mm[m-1]||0,need);o.mm[m-1]=Math.round(((+o.mm[m-1]||0)-cut)*10000)/10000;need-=cut}}})}
+    else if(A==='end'){const l=Q.lines[v.li];if(!l)return {err:'프로젝트가 없습니다.'};MS.forEach(m=>{if(m>v.b)l.mm[m-1]=0})}
+    else if(A==='rate'){const l=Q.lines[v.li];if(!l)return {err:'프로젝트가 없습니다.'};if(v.b<v.a)return {err:'종료월이 시작월보다 앞입니다.'};MS.forEach(m=>{if(m>=v.a&&m<=v.b)l.mm[m-1]=v.r})}
+    else Q.lines.forEach(l=>MS.forEach(m=>{if(m>=v.a)l.mm[m-1]=0}));
+    return {Q}}
+  function prev(){const r=apply(true);if(r.err){PV.innerHTML=`<span style="color:#B42335">${r.err}</span>`;return}
+    PV.innerHTML='<b>적용 후</b> · '+MS.map(m=>{const s=sumM(r.Q,m-1),t=r.Q.T[m-1];return `${m}월 ${f2(s)}${s>t+0.005?' <span style="color:#B42335">(초과)</span>':(t-s>0.005?' <span style="color:#8A6100">(대기 '+f2(t-s)+')</span>':'')}`}).join(' · ')}
+  bg.querySelectorAll('.acts button').forEach(b=>b.onclick=()=>{A=b.dataset.a;form()});
+  const close=()=>bg.remove();bg.querySelector('.c').onclick=close;bg.addEventListener('mousedown',e=>{if(e.target===bg)close()});
+  bg.querySelector('.ok').onclick=()=>{const r=apply();if(r.err){alert(r.err);return}P[pi]=r.Q;close();render();refreshHead(pi);
+    const tr=document.querySelector(`tr.ph[data-p="${pi}"]`);if(tr)tr.scrollIntoView({block:'center'})};
+  bg.addEventListener('keydown',e=>{if(e.key==='Escape')close()});form()}
+// ---- 클릭 ----
+document.addEventListener('click',e=>{const t=e.target;
+  if(t.dataset.add!==undefined){P[+t.dataset.add].lines.push({pj:'',code:'',kind:'이행',mm:Array(12).fill(0)});render();
+    const ins=document.querySelectorAll(`input.pj[data-p="${t.dataset.add}"]`);ins[ins.length-1].focus();ac.show(ins[ins.length-1])}
+  if(t.dataset.del){const [pi,li]=t.dataset.del.split(':').map(Number);P[pi].lines.splice(li,1);render()}
+  if(t.dataset.rg){const [pi,li]=t.dataset.rg.split(':').map(Number);openRange(t,pi,li)}
+  if(t.dataset.qk!==undefined)openQuick(+t.dataset.qk)});
+function filt(){const q=document.getElementById('q').value.trim(),oi=document.getElementById('onlyIdle').checked,oc=document.getElementById('onlyChg').checked,tfe=document.getElementById('tf'),tf=tfe?tfe.value:'';const vis={};
+  P.forEach((p,pi)=>{const txt=p.name+' '+p.tl+' '+p.team+' '+p.lines.map(l=>l.pj).join(' ');const idle=MS.some(m=>p.T[m-1]-sumM(p,m-1)>0.005);
+    const show=(!q||txt.includes(q))&&(!oi||idle)&&(!oc||chg(pi))&&(!tf||p.tk===tf);if(show)vis[p.tk]=1;document.querySelectorAll(`#tb tr[data-p="${pi}"]`).forEach(r=>r.classList.toggle('hide',!show))});
+  document.querySelectorAll('#tb tr.tm').forEach(r=>r.classList.toggle('hide',!vis[r.dataset.tkrow]))}
+['q','onlyIdle','onlyChg','tf'].forEach(id=>{const e=document.getElementById(id);if(e)e.addEventListener('input',filt)});
+document.getElementById('reset').addEventListener('click',()=>{if(confirm('고친 내용을 모두 되돌릴까요? (임시저장도 지워집니다)')){P=JSON.parse(ORIG);render()}});
+document.getElementById('save').addEventListener('click',async()=>{const b=document.getElementById('save');b.disabled=true;b.textContent='저장하는 중…';
+  const over=P.some(p=>MS.some(m=>sumM(p,m-1)>p.T[m-1]+0.005));if(over&&!confirm('가동대상을 넘는 달(빨간 칸)이 있습니다. 그대로 저장할까요? (반영할 때 가동대상만큼만 들어갑니다)')){b.disabled=false;b.textContent='저장하고 미리보기';return}
+  const r=await fetch(location.pathname,{method:'POST',headers:{'Content-Type':'application/json','X-CSRF':CSRF},body:JSON.stringify({dept:DEPT,keys:DATA.teams.map(t=>t.key),rest:!!(document.getElementById('rest')&&document.getElementById('rest').checked),people:P})});
+  const j=await r.json().catch(()=>({ok:false,msg:'저장하지 못했습니다.'}));if(j.ok){try{localStorage.removeItem(DK)}catch(e){}location.href=j.url}else{alert(j.msg||'저장하지 못했습니다.');b.disabled=false;b.textContent='저장하고 미리보기'}});
+window.addEventListener('beforeunload',e=>{if(P.some((p,i)=>chg(i))&&!document.getElementById('save').textContent.includes('중')){e.preventDefault();e.returnValue=''}});
+// ---- 임시저장 불러오기 ----
+(function(){let d=null;try{d=JSON.parse(localStorage.getItem(DK)||'null')}catch(e){}
+  if(!d||!Array.isArray(d.P)||d.P.length!==O.length||d.P.some((p,i)=>p.id!==O[i].id))return;
+  const n=d.P.filter((p,i)=>JSON.stringify(p)!==JSON.stringify(O[i])).length;if(!n)return;
+  const el=document.getElementById('draft');el.innerHTML=`<div class="draft"><span style="flex:1">저장 안 한 입력이 남아 있습니다 · <b>${n}명</b> · ${esc(d.at)}</span><button class="primary" id="dl">이어서 하기</button><button id="dx">버리기</button></div>`;
+  document.getElementById('dl').onclick=()=>{P=d.P;el.innerHTML='';render()};document.getElementById('dx').onclick=()=>{try{localStorage.removeItem(DK)}catch(e){}el.innerHTML=''}})();
+render();
+</script>
+{% elif not err %}<div class="card"><p class="muted">{{ '위에서 부서를 고르세요.' if opts else '담당 부서가 지정되지 않았습니다. 관리자에게 문의하세요.' }}</p></div>{% endif %}
+{% endblock %}

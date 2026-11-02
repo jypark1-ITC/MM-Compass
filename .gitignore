@@ -1,0 +1,18 @@
+# 실데이터·비밀키 (GitHub에 올리지 않음)
+storage/
+*.db
+*.key
+secret.key
+
+# 개인 환경 / 자동 생성
+.venv/
+.codepilot/
+__pycache__/
+*.pyc
+*.log
+
+# 큰 파일·원본 엑셀
+*.mp4
+*.xlsx
+*.xls
+*.pkl

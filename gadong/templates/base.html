@@ -1,0 +1,27 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}MM-Compass{% endblock %}</title><link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icon.svg') }}"><link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any"><link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}"><link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}"><meta name="theme-color" content="#0F2942">
+<link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">{% block head %}{% endblock %}</head><body class="{% block bodyclass %}{% endblock %}">
+{% set u = me() %}
+{% if u %}<header class="top"><a class="brand" href="{{ url_for('home') }}"><img class="bi" src="{{ url_for('static', filename='icon.svg') }}" alt="">MM-<span>Compass</span></a>
+<nav class="nav">
+  {% set ep = request.endpoint %}
+  {% if u['role']=='admin' %}<a href="{{ url_for('admin_home') }}" class="{{ 'on' if ep=='admin_home' }}">대시보드</a>{% endif %}
+  <a href="{{ url_for('meeting') }}" target="_blank">회의용 ↗</a>
+  {% if u['role']=='uploader' %}<a href="{{ url_for('my_home') }}" class="{{ 'on' if ep=='my_home' }}">이번 주 제출</a>{% endif %}
+  {% if u['role'] in ('admin','uploader') %}<div class="dd {{ 'on' if ep in ('upload','plan_edit','guide','upload_preview') }}"><button type="button">투입계획 <i>▾</i></button><div class="ddm">
+    <a href="{{ url_for('upload') }}" class="{{ 'on' if ep=='upload' }}">파일 업로드</a>
+    <a href="{{ url_for('plan_edit') }}" class="{{ 'on' if ep=='plan_edit' }}">화면에서 입력</a>
+    <a href="{{ url_for('upload') }}#tpl">작성 양식(템플릿) 받기</a>
+    <a href="{{ url_for('guide') }}" class="{{ 'on' if ep=='guide' }}">업로드 안내</a></div></div>{% endif %}
+  {% if u['role']=='admin' %}
+  {% set pc = pending_count() %}{% set bc = board_count() %}<div class="dd {{ 'on' if ep in ('weeks','week_detail','users','audit_log','submit_board','targets') }}"><button type="button">관리{% if pc+bc %} <em class="nbadge">{{ pc+bc }}</em>{% endif %} <i>▾</i></button><div class="ddm">
+    <a href="{{ url_for('submit_board') }}" class="{{ 'on' if ep=='submit_board' }}">제출 현황{% if bc %} <em class="nbadge">{{ bc }}</em>{% endif %}</a>
+    <a href="{{ url_for('weeks') }}" class="{{ 'on' if ep in ('weeks','week_detail') }}">주차 · 재계산 · 게시</a>
+    <a href="{{ url_for('users') }}" class="{{ 'on' if ep=='users' }}">사용자{% if pc %} <em class="nbadge">{{ pc }}</em>{% endif %}</a>
+    <a href="{{ url_for('targets') }}" class="{{ 'on' if ep=='targets' }}">목표 가득률</a>
+    <a href="{{ url_for('audit_log') }}" class="{{ 'on' if ep=='audit_log' }}">접속 · 변경 기록</a></div></div>{% endif %}
+</nav>
+<div class="who"><span class="chip">{{ ROLES[u['role']] }}</span><b>{{ u['display'] }}</b>{% set ud = user_depts(u) %}{% if ud|length == 1 %}<span>{{ ud[0] }}</span>{% elif ud|length > 1 %}<span title="{{ ud|join(', ') }}">담당 부서 {{ ud|length }}개</span>{% endif %}
+<form method="post" action="{{ url_for('logout') }}" class="inline"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button>로그아웃</button></form></div></header>{% endif %}
+<main>{% if request.endpoint not in ('login', 'signup') %}{% with m = get_flashed_messages() %}{% for x in m %}<div class="flash">{{ x }}</div>{% endfor %}{% endwith %}{% endif %}
+{% block body %}{% endblock %}</main><div style="text-align:center;color:#9AA5B4;font-size:11px;padding:18px 0 10px"><img src="{{ url_for('static', filename='logo_itcen.png') }}" alt="" style="height:11px;vertical-align:middle;margin-right:8px;opacity:.6" onerror="this.style.display='none'">MM-Compass 화면 버전 1015 · 팀 단위 입력</div><script src="{{ url_for('static', filename='colalign.js') }}"></script></body></html>

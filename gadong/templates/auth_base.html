@@ -1,0 +1,129 @@
+{% extends "base.html" %}{# 로그인·회원가입 공통 화면 (왼쪽 소개 + 오른쪽 양식) #}
+{% block head %}<style>
+.lg-right .lg-row{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.lg-right select,.lg-right textarea{width:100%;max-width:none;height:46px;border:1px solid #D5DCE6;background:#fff;padding:0 12px;font:inherit;font-size:14.5px}
+.lg-right textarea{height:64px;padding:10px 12px;resize:vertical}
+.lg-right .lg-note{font-size:12px;color:var(--muted);margin-top:6px}
+.lg-ok{background:#E8F3EE;border-left:4px solid #2E8B60;color:#14532D;padding:12px 14px;font-size:14px;line-height:1.6}
+.lg-right a{color:#1F5FD0;font-weight:700;text-decoration:none}
+
+body.lg-page{background:radial-gradient(1200px 600px at 20% 10%,#EAF1FB 0%,rgba(234,241,251,0) 60%),radial-gradient(900px 500px at 90% 90%,#EEF3FA 0%,rgba(238,243,250,0) 60%),#F6F8FB}
+body.lg-page main{max-width:none;padding:0}
+.lg-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.lg-card{display:grid;grid-template-columns:1fr 1fr;width:100%;max-width:1040px;background:#fff;box-shadow:0 24px 60px rgba(15,41,66,.12),0 2px 6px rgba(15,41,66,.05);overflow:hidden}
+.lg-left{position:relative;background:linear-gradient(160deg,#EEF4FC 0%,#E3ECF8 55%,#DCE7F6 100%);padding:30px 30px 22px;overflow:hidden}
+.lg-left:before{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.9),rgba(255,255,255,0) 70%)}
+.lg-dots{position:absolute;right:26px;top:70px;width:90px;height:60px;background-image:radial-gradient(#B9C9E2 1.2px,transparent 1.3px);background-size:10px 10px;opacity:.7}
+.lg-logo{position:relative;display:block;height:16px;width:auto;margin-bottom:14px}
+.lg-name{position:relative;font-size:44px;font-weight:800;letter-spacing:-.03em;color:#0F2942;line-height:1.05}
+.lg-name span{color:#1F5FD0}
+.lg-sub{position:relative;margin-top:8px;font-size:16px;font-weight:600;color:#33475F}
+.lg-ill{position:relative;margin:14px -6px 4px}
+.lg-ill svg{width:100%;height:auto;display:block}
+.lg-flow{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px;margin-bottom:8px}
+.lg-step{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);box-shadow:0 4px 12px rgba(31,95,208,.08);padding:10px 6px 9px;text-align:center;font-size:12px;font-weight:600;color:#33475F;position:relative}
+.lg-step svg{width:34px;height:34px;display:block;margin:0 auto 5px}
+.lg-step:not(:last-child):after{content:"›";position:absolute;right:-8px;top:34%;color:#1F5FD0;font-weight:700;font-size:16px}
+.lg-x{position:relative;margin-top:14px;text-align:center;font-size:12px;color:#1F5FD0;font-weight:600;display:flex;align-items:center;gap:10px}
+.lg-x:before{content:"";flex:1;height:1px;background:#9DB6DE}
+.lg-right{display:flex;flex-direction:column;justify-content:center;padding:44px 52px}
+.lg-right h1{margin:0;text-align:center;font-size:30px;font-weight:800;color:#111827;letter-spacing:-.02em}
+.lg-right .lg-hint{text-align:center;color:var(--muted);margin:8px 0 26px;font-size:14px}
+.lg-right label{display:block;font-weight:700;font-size:14px;color:#1F2937;margin:14px 0 7px}
+.lg-right input[type=text],.lg-right input[type=email],.lg-right input[type=password],.lg-right input:not([type]){width:100%;max-width:none;height:46px;border:1px solid #D5DCE6;background:#fff;padding:0 14px;font:inherit;font-size:15px}
+.lg-right input:focus{outline:none;border-color:#1F5FD0;box-shadow:0 0 0 3px rgba(31,95,208,.15)}
+.lg-right .lg-forgot{text-align:right;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.lg-right button.primary{width:100%;height:50px;margin-top:22px;background:#1F5FD0;border:0;color:#fff;font:inherit;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 6px 14px rgba(31,95,208,.25)}
+.lg-right button.primary:hover{background:#1A52B6}
+.lg-foot{text-align:center;margin-top:22px;color:#4B5563;font-size:13.5px}
+.lg-foot b{color:#1F5FD0}
+.lg-flash{background:#FDECEC;border-left:4px solid #C0392B;color:#7F1D1D;padding:10px 12px;margin-bottom:6px;font-size:13.5px}
+@media (max-width:860px){.lg-card{grid-template-columns:1fr}.lg-left{padding:24px 20px}.lg-name{font-size:36px}.lg-right{padding:32px 22px}}
+@media (max-width:480px){.lg-flow{grid-template-columns:repeat(2,1fr)}.lg-step:nth-child(2):after{display:none}}
+.lg-bn{position:relative;display:flex;align-items:center;gap:14px}.lg-ico{width:64px;height:64px;flex:none;box-shadow:0 8px 18px rgba(15,41,66,.22);border-radius:15px}.lg-ko{position:relative;margin-top:4px;font-size:15px;font-weight:700;color:#5B6B82;letter-spacing:.02em}
+@media (max-width:480px){.lg-ico{width:48px;height:48px}.lg-name{font-size:30px}}
+</style>{% endblock %}
+{% block bodyclass %}lg-page{% endblock %}
+{% block body %}
+<div class="lg-wrap"><div class="lg-card">
+  <section class="lg-left" aria-label="MM-Compass 소개">
+    <div class="lg-dots"></div>
+    <img class="lg-logo" src="{{ url_for('static', filename='logo_itcen.png') }}" alt="ITCEN" onerror="this.style.display='none'">
+    <div class="lg-bn"><img class="lg-ico" src="{{ url_for('static', filename='icon.svg') }}" alt=""><div class="lg-name">MM-<span>Compass</span></div></div>
+    <div class="lg-sub">인력 가동·가득 현황 통합 관리</div>
+    <div class="lg-ill" aria-hidden="true">
+      <svg viewBox="0 0 480 250" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#F3F7FD"/></linearGradient>
+          <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B8DEF"/><stop offset="1" stop-color="#1F5FD0"/></linearGradient>
+          <linearGradient id="g3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A5A9B" stop-opacity=".22"/><stop offset="1" stop-color="#2A5A9B" stop-opacity="0"/></linearGradient>
+          <linearGradient id="gx" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34A16B"/><stop offset="1" stop-color="#1E7A4E"/></linearGradient>
+          <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="9" flood-color="#1F3D73" flood-opacity=".16"/></filter>
+          <filter id="sh2" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#1F3D73" flood-opacity=".18"/></filter>
+        </defs>
+        <!-- 바닥 원판 -->
+        <ellipse cx="250" cy="226" rx="200" ry="18" fill="#C9D8EF" opacity=".55"/>
+        <!-- 투입계획 파일 (왼쪽) -->
+        <g filter="url(#sh2)">
+          <rect x="18" y="98" width="70" height="88" rx="6" fill="#fff"/>
+          <rect x="26" y="90" width="70" height="88" rx="6" fill="#fff"/>
+          <rect x="26" y="90" width="70" height="20" rx="6" fill="url(#gx)"/>
+          <text x="61" y="104" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">XLSX</text>
+          <g fill="#DCE5F2"><rect x="34" y="118" width="54" height="5" rx="2"/><rect x="34" y="129" width="44" height="5" rx="2"/><rect x="34" y="140" width="50" height="5" rx="2"/><rect x="34" y="151" width="38" height="5" rx="2"/></g>
+          <text x="61" y="171" text-anchor="middle" font-size="9" font-weight="700" fill="#33475F">투입계획</text>
+        </g>
+        <path d="M104 140 h26" stroke="#1F5FD0" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="2 6"/>
+        <path d="M128 134 l7 6 -7 6" fill="none" stroke="#1F5FD0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- 대시보드 창 -->
+        <g filter="url(#sh)">
+          <rect x="146" y="24" width="250" height="186" rx="10" fill="url(#g1)"/>
+          <rect x="146" y="24" width="250" height="26" rx="10" fill="#fff"/>
+          <circle cx="160" cy="37" r="3.2" fill="#F2A7A7"/><circle cx="171" cy="37" r="3.2" fill="#F4D58D"/><circle cx="182" cy="37" r="3.2" fill="#9ED7B5"/>
+          <text x="204" y="41" font-size="10.5" font-weight="800" fill="#0F2942">MM-<tspan fill="#1F5FD0">Compass</tspan></text>
+          <!-- KPI -->
+          <rect x="158" y="60" width="72" height="42" rx="6" fill="#fff" stroke="#E3EAF5"/>
+          <text x="166" y="74" font-size="8" fill="#6B7280">가득률</text>
+          <text x="166" y="93" font-size="15" font-weight="800" fill="#C17A2B">87<tspan font-size="9">%</tspan></text>
+          <rect x="236" y="60" width="72" height="42" rx="6" fill="#fff" stroke="#E3EAF5"/>
+          <text x="244" y="74" font-size="8" fill="#6B7280">가동률</text>
+          <text x="244" y="93" font-size="15" font-weight="800" fill="#2A5A9B">92<tspan font-size="9">%</tspan></text>
+          <rect x="314" y="60" width="70" height="42" rx="6" fill="#fff" stroke="#E3EAF5"/>
+          <text x="322" y="74" font-size="8" fill="#6B7280">대기 MM</text>
+          <g><rect x="322" y="84" width="6" height="12" rx="1" fill="#BFD1EE"/><rect x="331" y="80" width="6" height="16" rx="1" fill="#93B3E6"/><rect x="340" y="86" width="6" height="10" rx="1" fill="#BFD1EE"/><rect x="349" y="82" width="6" height="14" rx="1" fill="url(#g2)"/><rect x="358" y="88" width="6" height="8" rx="1" fill="#BFD1EE"/></g>
+          <!-- 추이 차트 -->
+          <rect x="158" y="110" width="150" height="88" rx="6" fill="#fff" stroke="#E3EAF5"/>
+          <text x="166" y="123" font-size="8" fill="#6B7280">월별 추이</text>
+          <rect x="268" y="128" width="34" height="64" rx="3" fill="#F2F5FA"/>
+          <path d="M166 178 L184 170 L202 172 L220 160 L238 162 L256 150 L274 152 L292 144 L300 142 L300 192 L166 192 Z" fill="url(#g3)"/>
+          <path d="M166 178 L184 170 L202 172 L220 160 L238 162 L256 150 L274 152 L292 144 L300 142" fill="none" stroke="#2A5A9B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M166 186 L184 180 L202 182 L220 172 L238 175 L256 165 L274 166" fill="none" stroke="#C17A2B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M274 166 L292 160 L300 158" fill="none" stroke="#C17A2B" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"/>
+          <circle cx="256" cy="150" r="3.2" fill="#fff" stroke="#2A5A9B" stroke-width="2"/>
+          <!-- 도넛 -->
+          <rect x="314" y="110" width="70" height="88" rx="6" fill="#fff" stroke="#E3EAF5"/>
+          <text x="322" y="123" font-size="8" fill="#6B7280">투입 구성</text>
+          <circle cx="349" cy="162" r="21" fill="none" stroke="#E6ECF6" stroke-width="9"/>
+          <circle cx="349" cy="162" r="21" fill="none" stroke="#1F5FD0" stroke-width="9" stroke-dasharray="110 132" transform="rotate(-90 349 162)"/>
+          <circle cx="349" cy="162" r="21" fill="none" stroke="#C17A2B" stroke-width="9" stroke-dasharray="12 132" stroke-dashoffset="-110" transform="rotate(-90 349 162)"/>
+        </g>
+        <!-- 인력 아이콘 (오른쪽) -->
+        <g filter="url(#sh2)">
+          <rect x="404" y="112" width="62" height="74" rx="8" fill="#fff"/>
+          <circle cx="425" cy="134" r="8" fill="#93B3E6"/><path d="M412 160 q13 -16 26 0" fill="#93B3E6"/>
+          <circle cx="446" cy="138" r="7" fill="url(#g2)"/><path d="M434 162 q12 -15 24 0" fill="url(#g2)"/>
+          <rect x="412" y="168" width="46" height="5" rx="2" fill="#DCE5F2"/><rect x="412" y="176" width="30" height="5" rx="2" fill="#DCE5F2"/>
+        </g>
+        <!-- 체크 배지 -->
+        <g filter="url(#sh2)"><circle cx="392" cy="34" r="15" fill="url(#g2)"/><path d="M385 34 l5 5 9 -10" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>
+      </svg>
+    </div>
+    <div class="lg-flow">
+      <div class="lg-step"><svg viewBox="0 0 40 40"><rect x="9" y="5" width="22" height="29" rx="3" fill="#fff" stroke="#93B3E6" stroke-width="1.6"/><rect x="9" y="5" width="22" height="8" rx="3" fill="#2E8B60"/><path d="M20 30V18m-5 5 5-5 5 5" stroke="#1F5FD0" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>투입계획 업로드</div>
+      <div class="lg-step"><svg viewBox="0 0 40 40"><ellipse cx="20" cy="10" rx="11" ry="4" fill="#93B3E6"/><path d="M9 10v20c0 2.2 4.9 4 11 4s11-1.8 11-4V10" fill="#DCE7F8" stroke="#93B3E6" stroke-width="1.4"/><path d="M9 17c0 2.2 4.9 4 11 4s11-1.8 11-4M9 24c0 2.2 4.9 4 11 4s11-1.8 11-4" fill="none" stroke="#93B3E6" stroke-width="1.4"/></svg>자동 집계</div>
+      <div class="lg-step"><svg viewBox="0 0 40 40"><rect x="5" y="7" width="30" height="24" rx="3" fill="#fff" stroke="#93B3E6" stroke-width="1.6"/><path d="M10 25l6-6 5 4 8-9" fill="none" stroke="#1F5FD0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 27l6-3 5 1 8-4" fill="none" stroke="#C17A2B" stroke-width="1.8" stroke-linecap="round"/></svg>가동·가득 분석</div>
+      <div class="lg-step"><svg viewBox="0 0 40 40"><rect x="5" y="6" width="30" height="20" rx="2" fill="#fff" stroke="#93B3E6" stroke-width="1.6"/><path d="M20 26v6m-6 0h12" stroke="#93B3E6" stroke-width="1.8" stroke-linecap="round"/><rect x="10" y="15" width="4" height="7" fill="#93B3E6"/><rect x="17" y="11" width="4" height="11" fill="#1F5FD0"/><rect x="24" y="13" width="4" height="9" fill="#93B3E6"/></svg>회의용 대시보드</div>
+    </div>
+      </section>
+  <section class="lg-right">{% block form %}{% endblock %}</section>
+</div></div>
+{% endblock %}

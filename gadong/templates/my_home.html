@@ -1,0 +1,67 @@
+{% extends "base.html" %}{% block title %}MM-Compass · 이번 주 제출{% endblock %}{% block head %}<style>
+.mh .now{display:flex;gap:18px;align-items:center;border-left:5px solid #CBD3DD}.mh .now.s-rej{border-left-color:#C0392B}.mh .now.s-wait{border-left-color:#D4A017}.mh .now.s-sub{border-left-color:#2A5A9B}.mh .now.s-ok{border-left-color:#1F6F54}
+.mh .now .big{font-size:20px;font-weight:800;color:var(--navy)}.mh .now .st{font-size:14px;padding:4px 12px}
+.mh .opts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+.mh .opt{background:#fff;border:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:8px}
+.mh .opt h3{margin:0;font-size:15px;color:var(--navy)}.mh .opt p{margin:0;color:var(--muted);font-size:13px;flex:1;line-height:1.6}
+.mh .opt.rec{border-color:#1F5FD0;box-shadow:inset 0 3px 0 #1F5FD0}.mh .opt .tag{font-size:11px;font-weight:700;color:#1F5FD0}
+.mh .opt .btn,.mh .opt button{text-align:center;width:100%}
+.mh .hrf{display:grid;grid-template-columns:1.1fr 1fr .9fr 1fr;gap:10px}.mh .hrf input,.mh .hrf select{max-width:none}
+.mh .hrf .wide{grid-column:1/-1}
+.mh td,.mh th{white-space:nowrap}.mh .hrt td:nth-child(5){white-space:normal}
+.mh .okbox{background:#E3F1EB;border-left:4px solid #1F6F54;padding:10px 12px;margin-bottom:12px;font-size:13.5px}.mh tr.new td{background:#F1F9F5}
+.mh .dlbar{background:#EEF4FF;border-left:4px solid #1F5FD0;padding:9px 14px;margin:-6px 0 14px;font-size:14px}.mh .dlbar b{color:#123E7A}.mh .dlbar.late{background:#FDECEC;border-left-color:#C0392B}.mh .dlbar.late span{color:#B42335;font-weight:700}
+.mh .dsw{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.mh .dsw a{background:#fff;border:1px solid var(--line);padding:6px 10px;text-decoration:none;color:#374151;font-weight:600;font-size:13px}.mh .dsw a.on{border-color:#1F5FD0;box-shadow:inset 0 -3px 0 #1F5FD0;color:#123E7A}.mh .dsw .st{margin-left:4px}
+.mh .tip{background:#F3F7FD;border:1px solid #D6E2F3;padding:10px 12px;font-size:13px;line-height:1.7;margin-bottom:12px}
+@media (max-width:860px){.mh .opts{grid-template-columns:1fr}.mh .hrf{grid-template-columns:1fr 1fr}.mh .now{flex-direction:column;align-items:flex-start}}
+</style>{% endblock %}{% block body %}<div class="mh">
+{% set mon_s = mon[5:]|replace('-','/') %}{% set thu_s = thu[5:]|replace('-','/') %}
+<h1>이번 주 투입계획 제출</h1>
+<div class="sub">{{ dlabel }}{% if trows|length > 1 %} · {{ trows|length }}팀{% endif %} · <b>{{ wt }}</b> ({{ mon_s }} 월 ~ {{ thu_s }} 목)</div>
+<div class="dlbar {{ 'late' if late and st in ('미제출','확인 대기','반려','보류','일부') }}"><b>업로드 마감 · {{ dl }}까지</b>{% if st in ('미제출','확인 대기','반려','보류','일부') %}{% if late %} <span>· 마감이 지났습니다. 지금이라도 내 주세요</span>{% elif left_h < 24 %} <span>· {{ left_h }}시간 남음</span>{% endif %}{% endif %}</div>
+{% if mine|length > 1 %}<div class="dsw"><span class="muted">담당 범위</span>{% for x in mine %}{% set xv = V[x.st] %}<a href="{{ url_for('my_home', dept=x.dept) }}" class="{{ 'on' if x.dept==dept }}">{{ '내 담당 전체' if x.dept==ALL else x.dept.split(' · ')[-1] }}{% if x.n > 1 %} ({{ x.n }}팀){% endif %} <span class="st st-{{ xv[1] }}">{{ xv[0] }}</span></a>{% endfor %}</div>{% endif %}
+
+{% set v = V[st] %}{% set how = how_of(row) %}
+<div class="card now s-{{ v[1] }}"><div><span class="st st-{{ v[1] }}">{{ v[0] }}</span></div><div style="flex:1">
+{% if trows|length > 1 %}{% set n_in = trows|rejectattr('st','equalto','미제출')|list|length %}<div class="big">{{ trows|length }}팀 중 {{ n_in }}팀 낸 상태{% if n_in < trows|length %} · {{ trows|length - n_in }}팀 아직{% endif %}</div><div class="muted">팀마다 상태가 따로 있습니다 (아래 표). 한 번에 입력·업로드하면 팀별로 자동으로 나뉘고, 바뀐 게 없으면 <b>변동없음</b>으로 안 낸 팀을 한 번에 낼 수 있습니다.</div>
+{% elif st=='미제출' %}<div class="big">아직 이번 주 제출이 없습니다</div><div class="muted">아래 3가지 중 하나로 내 주세요. 바뀐 게 없으면 <b>변동없음</b> 한 번이면 끝납니다.</div>
+{% elif st=='확인 대기' %}<div class="big">작성 중 — 아직 제출 전입니다</div><div class="muted">미리보기를 확인하고 <b>[제출]</b>을 눌러야 관리자에게 넘어갑니다. ({{ row['uploaded_at'][5:16] }} · {{ how }})</div>
+{% elif st in ('제출','변동없음') %}<div class="big">제출했습니다 — 관리자 확인을 기다립니다</div><div class="muted">{{ row['uploaded_at'][5:16] }} · {{ how }}{% if st=='변동없음' %} · 지난번 반영본 그대로{% endif %} · 관리자가 반영 확정하면 이번 주 통계에 들어갑니다</div>
+{% elif st=='반영' %}<div class="big">반영 완료</div><div class="muted">{{ row['uploaded_at'][5:16] }} · {{ how }} · 이번 주 통계에 들어갑니다. 고칠 게 생기면 다시 내면 최신본이 쓰입니다.</div>
+{% elif st=='보류' %}<div class="big">보류되었습니다</div><div class="muted">보류 사유: <b>{{ row['note'] }}</b> · 확인 후 다시 내 주세요.</div>
+{% else %}<div class="big">반려되었습니다 — 다시 내 주세요</div><div class="muted">반려 사유: <b>{{ row['note'] }}</b></div>{% endif %}
+</div>{% if trows|length > 1 %}{% elif row and row['kind']=='plan' %}<a class="btn" href="{{ url_for('upload_preview', uid=row['id']) }}">{{ '미리보기 · 제출' if st=='확인 대기' else '내용 보기' }}</a>{% endif %}</div>
+
+{% if trows|length > 1 %}<div class="card"><h2>팀별 제출 상태 <span class="muted" style="font-size:12.5px;font-weight:400">{{ trows|length }}팀</span></h2><div style="overflow-x:auto"><table><thead><tr><th>팀</th><th>상태</th><th>방식</th><th>제출 시각</th><th>낸 사람</th><th></th></tr></thead><tbody>
+{% set ns = namespace(dv=None) %}{% for x in trows %}{% set xv = V[x.st] %}{% set dvn = x.t.grp %}{% if dvn != ns.dv %}{% set ns.dv = dvn %}<tr><td colspan="6" style="background:#EEF2F7;font-weight:700;color:var(--navy)">{{ dvn }}</td></tr>{% endif %}
+<tr class="{{ 'miss' if x.st in ('미제출','반려') }}"><td>{{ x.t.label }} <span class="muted">{{ x.t.n }}명</span></td><td><span class="st st-{{ xv[1] }}">{{ xv[0] }}</span></td><td>{% if x.r %}{{ how_of(x.r) }}{% endif %}</td><td>{{ x.r['uploaded_at'][5:16] if x.r else '' }}</td><td>{{ x.r['display'] if x.r else '' }}</td>
+<td>{% if x.r %}<a href="{{ url_for('upload_preview', uid=x.r['id']) }}">{{ '미리보기 · 제출' if x.st=='확인 대기' else '보기' }}</a>{% endif %}</td></tr>{% endfor %}</tbody></table></div></div>{% endif %}
+<div class="opts">
+<div class="opt rec"><span class="tag">추천</span><h3>화면에서 입력</h3><p>우리 인원·프로젝트가 채워진 표에서 바뀐 숫자만 고칩니다. 담당 팀이 여러 개면 <b>한 화면에 팀별로 묶여</b> 나오고 한 번에 저장됩니다.</p><a class="btn primary" href="{{ url_for('plan_edit', dept=dept) }}">입력 화면 열기 ›</a></div>
+<div class="opt"><h3>템플릿 파일 올리기</h3><p>인원·현재 투입이 채워진 템플릿을 받아 숫자만 고쳐 올립니다. 팀을 골라 받을 수 있고, 여러 팀은 한 시트(팀 열)로 받아 한 번에 올리면 팀별로 나뉩니다.</p><a class="btn" href="{{ url_for('upload', dept=dept) }}#tpl">⬇ 템플릿 받기 (팀 고르기)</a><a class="btn" href="{{ url_for('upload', dept=dept) }}">파일 올리기 ›</a></div>
+<div class="opt"><h3>변동없음</h3><p>{% if last %}지난번 반영본(<b>{{ last['week'] }}</b> · {{ last['uploaded_at'][5:10]|replace('-','/') }})을 그대로 이번 주 것으로 냅니다.{% else %}아직 반영된 파일이 없어 쓸 수 없습니다. 첫 주는 화면 입력이나 파일로 내 주세요.{% endif %}</p>
+<form method="post" action="{{ url_for('my_nochange') }}" onsubmit="return confirm('{{ '아직 안 낸 팀을 모두 ' if trows|length > 1 else '' }}지난번 반영본 그대로 이번 주 것으로 제출할까요?')"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><input type="hidden" name="dept" value="{{ dept }}">
+<button {{ 'disabled' if not last or st in ('제출','변동없음','반영') }}>{{ '안 낸 팀 모두 ' if trows|length > 1 else '' }}변동없음으로 제출</button></form></div>
+</div>
+
+<div class="card"><h2>지난 주차</h2><div style="overflow-x:auto"><table><thead><tr><th>주차</th><th>상태</th><th>제출 방식</th><th>제출 시각</th><th>낸 사람</th><th></th></tr></thead><tbody>
+{% for h in hist %}{% set hv = V[h.st] %}<tr><td>{{ h.title }}</td><td><span class="st st-{{ hv[1] }}">{{ hv[0] }}</span></td>
+<td>{% if h.r %}{{ how_of(h.r) }}{% elif h.n > 1 and h.n_ok %}{{ h.n_ok }}/{{ h.n }}팀{% else %}<span class="muted">—</span>{% endif %}</td>
+<td>{{ h.r['uploaded_at'][5:16] if h.r else '' }}</td><td>{{ h.r['display'] if h.r else '' }}</td><td>{% if h.r %}<a href="{{ url_for('upload_preview', uid=h.r['id']) }}">보기</a>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+
+<div class="card" id="hr"><h2>인사 변동 알리기 <span class="muted" style="font-size:12px;font-weight:400">달 중간 입사·퇴사·휴직·복직·조직이동</span></h2>
+<div class="tip">가동 대상 인원은 <b>회사 인사자료</b>가 기준입니다. 인사자료에 아직 안 들어간 변동(예: 11/15 입사, 11/20 휴직 시작)을 적어 주시면 관리자가 확인해 반영하면 다음 재계산부터 가동대상MM에 들어갑니다. 투입계획 표에는 그대로 숫자로 반영해 주세요.</div>
+{% for n in notes if n['id']==hr_ok %}<div class="okbox">제출했습니다 — <b>{{ n['name'] }} · {{ n['kind'] }} · {{ n['date'] }}</b>. 관리자 '제출 현황' 화면에 바로 올라가고, 처리 결과는 아래 내역에 표시됩니다.</div>{% endfor %}
+<form method="post" action="{{ url_for('my_hr') }}"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><input type="hidden" name="dept" value="{{ dept }}">
+<div class="hrf"><div><label>성명</label><input name="name" required maxlength="30"></div><div><label>사번 <span class="muted">(알면)</span></label><input name="sabun" maxlength="20"></div>
+<div><label>변동</label><select name="kind" required>{% for k in HR_KINDS %}<option>{{ k }}</option>{% endfor %}</select></div><div><label>날짜</label><input type="date" name="date" required></div>
+<div class="wide"><label>새 소속 <span class="muted">(조직이동일 때만 · 이동할 팀 이름을 가동인력목록 그대로)</span></label><input name="to_org" maxlength="100"></div>
+<div class="wide"><label>메모 <span class="muted">(입사면 투입 예정 프로젝트, 조직이동이면 어디로, 휴직이면 복귀 예정일 등)</span></label><input name="memo" maxlength="300"></div></div>
+<div style="margin-top:12px"><button class="primary">제출하기</button></div></form>
+{% if notes %}<h3>우리 부서 제출 내역</h3><div style="overflow-x:auto"><table class="hrt"><thead><tr><th>제출일</th><th>성명</th><th>변동</th><th>날짜</th><th>메모</th><th>처리</th><th>관리자 메모</th><th></th></tr></thead><tbody>
+{% for n in notes %}<tr class="{{ 'new' if n['id']==hr_ok }}"><td>{{ n['created_at'][5:10]|replace('-','/') }}</td><td>{{ n['name'] }}{% if n['sabun'] %} <span class="muted">{{ n['sabun'] }}</span>{% endif %}</td><td>{{ n['kind'] }}</td><td>{{ n['date'] }}</td><td>{{ n['memo'] }}</td>
+<td><span class="st st-{{ {'접수':'wait','확인':'sub','반영':'ok','인사자료와 다름':'rej'}[n['status']] }}" title="{{ HR_HELP[n['status']] }}">{{ n['status'] }}</span></td><td class="muted">{{ n['admin_note'] }}</td>
+<td>{% if n['status']=='접수' %}<form method="post" action="{{ url_for('my_hr_delete', nid=n['id']) }}" class="inline" onsubmit="return confirm('이 제출을 삭제할까요?')"><input type="hidden" name="csrf" value="{{ csrf_token() }}"><button class="danger">삭제</button></form>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div>{% endif %}</div>
+</div>{% endblock %}
