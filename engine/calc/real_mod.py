@@ -165,10 +165,10 @@ def confirm_section():
     rows = []
     for c in RT["corps"]:
         d = c["d"]
-        rows.append(f'<tr class="sub"><td class="l">{c["name"]} 소계</td><td>{d["T"][m]:.2f} MM</td><td>{inp(d):.2f} MM</td><td>{d["ex"][m]:.2f} MM</td><td>{d["idle"][m]:.2f} MM</td><td>{d["g"][m]:.2f}%</td><td>{d["u"][m]:.2f}%</td></tr>')
+        rows.append(f'<tr class="sub"><td class="l">{c["name"]} 소계</td><td>{d["T"][m]:.2f} MM</td><td>{inp(d):.2f} MM</td><td>{d["ex"][m]:.2f} MM</td><td>{d["pr"][m]:.2f} MM</td><td>{d["rd"][m]:.2f} MM</td><td>{d["idle"][m]:.2f} MM</td><td>{d["g"][m]:.2f}%</td><td>{d["u"][m]:.2f}%</td></tr>')
         for h in c["hqs"]:
             d = h["d"]
-            rows.append(f'<tr class="child"><td class="l">{h["name"]}</td><td>{d["T"][m]:.2f} MM</td><td>{inp(d):.2f} MM</td><td>{d["ex"][m]:.2f} MM</td><td>{d["idle"][m]:.2f} MM</td><td>{d["g"][m]:.2f}%</td><td>{d["u"][m]:.2f}%</td></tr>')
+            rows.append(f'<tr class="child"><td class="l">{h["name"]}</td><td>{d["T"][m]:.2f} MM</td><td>{inp(d):.2f} MM</td><td>{d["ex"][m]:.2f} MM</td><td>{d["pr"][m]:.2f} MM</td><td>{d["rd"][m]:.2f} MM</td><td>{d["idle"][m]:.2f} MM</td><td>{d["g"][m]:.2f}%</td><td>{d["u"][m]:.2f}%</td></tr>')
     return f'''
   <!-- 0 -->
   <section id="s0" class="card-sec confirm">
@@ -183,10 +183,11 @@ def confirm_section():
     </div>
     <details class="conf-more">
       <summary>본부별 {PM}월 실적 보기</summary>
+      <style>.conf-more table{{table-layout:fixed;width:100%}}.conf-more th.l,.conf-more td.l{{width:170px}}.conf-more th,.conf-more td{{white-space:nowrap}}</style>
       <div class="scroll"><table>
-        <thead><tr><th class="l">법인 / 본부</th><th>가동대상</th><th>투입</th><th>이행</th><th>대기</th><th>가득률</th><th>가동률</th></tr></thead>
+        <thead><tr><th class="l">법인 / 본부</th><th>가동대상</th><th>투입</th><th>이행</th><th>제안</th><th>R&amp;D·내부과제</th><th>대기</th><th>가득률</th><th>가동률</th></tr></thead>
         <tbody>{"".join(rows)}</tbody>
-        <tfoot><tr><td class="l">전체</td><td>{D["T"][m]:.2f} MM</td><td>{inp(D):.2f} MM</td><td>{D["ex"][m]:.2f} MM</td><td>{D["idle"][m]:.2f} MM</td><td>{D["g"][m]:.2f}%</td><td>{D["u"][m]:.2f}%</td></tr></tfoot>
+        <tfoot><tr><td class="l">전체</td><td>{D["T"][m]:.2f} MM</td><td>{inp(D):.2f} MM</td><td>{D["ex"][m]:.2f} MM</td><td>{D["pr"][m]:.2f} MM</td><td>{D["rd"][m]:.2f} MM</td><td>{D["idle"][m]:.2f} MM</td><td>{D["g"][m]:.2f}%</td><td>{D["u"][m]:.2f}%</td></tr></tfoot>
       </table></div>
     </details>
    </details>
@@ -967,6 +968,7 @@ ORG_CSS = ORG_CSS + r"""
   .np-tab td.np-so,table.ca-fix td.l.np-so{white-space:normal!important;word-break:keep-all!important;overflow-wrap:normal!important;font-size:12px;line-height:1.35}
   .np-tg{display:flex;gap:6px;padding:8px 14px 4px}.np-tg button{font:inherit;font-size:12.5px;padding:4px 12px;border:1px solid var(--line);background:#fff;color:#374151;cursor:pointer;border-radius:999px}.np-tg button[aria-pressed=true]{background:#1F3A5F;border-color:#1F3A5F;color:#fff}
   .np-tab tr[hidden]{display:none}
+  .np-tab td:first-child,.np-tab th:first-child,table.ca-fix.np-tab td:first-child{white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;padding-left:6px!important;padding-right:2px!important}   /* 성명이 두 줄로 꺾이지 않게 */
   .np-tab td.np-pj{white-space:normal!important;overflow:visible;text-overflow:clip;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}.np-tab td.np-pj .np-rk{font-size:13px;color:#1F2937}.np-tab td.np-pj .np-pn{font-size:11.5px;color:#6B7280}
   #idle td.plan,#proj td.l:nth-last-child(2){max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #idle td.plan .trn{font-size:.82em;color:#6B7280;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
