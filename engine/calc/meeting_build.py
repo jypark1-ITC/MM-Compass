@@ -154,7 +154,7 @@ def row_html(cls, name, key, d, attrs=""):
     return (f'<tr class="{cls}" {attrs}><td class="l">{name}</td><td class="tc">{d["T"][P10]:.2f}</td>'
             f'{mcell(key, d, "g")}{mcell(key, d, "u")}{mcell(key, d, "idle", "MM", False)}</tr>')
 rows = ""
-GD = []; SUBN = {}; CARDS = []
+GD = []; SUBN = {}; CARDS = []; DVSID = {}
 def gentry(id, name, c, key, d, par=None):
     e = dict(id=id, name=name, cn=c["name"], corp=(c["name"] if not par else None), T=round(d["T"][P10], 2), u=round(d["u"][P10], 2), g=round(d["g"][P10], 2),
              idle=round(d["idle"][P10], 2), pu=round(_pv(key, d, "u"), 2), pg=round(_pv(key, d, "g"), 2), pidle=round(_pv(key, d, "idle"), 2),
@@ -162,10 +162,14 @@ def gentry(id, name, c, key, d, par=None):
              fu=(round(min(d["u"][11], 100), 2) if P10 < 11 and d["u"][11] else None), fg=(round(min(d["g"][11], 100), 2) if P10 < 11 and d["g"][11] else None))
     if par: e["par"] = par
     GD.append(e); return e
-def _sub(hid, h, c, name, key, d):
+def _sub(hid, h, c, name, key, d, dvname=None, tm=False):
     if name == h["name"]: return ""
     k = SUBN.get(hid, 0); SUBN[hid] = k + 1; sid = f"{hid}#{k}"
     e = gentry(sid, name, c, key, d, hid); e["corp"] = f'{c["name"]} · {h["name"]}'
+    if dvname and not tm: DVSID[(hid, dvname)] = sid
+    if tm:
+        e["tm"] = 1; e["corp"] = f'{c["name"]} · {h["name"]} · {dvname}'
+        if (hid, dvname) in DVSID: e["dv"] = DVSID[(hid, dvname)]
     return f' data-sid="{sid}"'
 for c in RT["corps"]:
     rows += row_html("corp", E(c["name"]), K("c", c["name"]), c["d"])
@@ -177,24 +181,24 @@ for c in RT["corps"]:
             if dv["name"] != "(직속)":
                 if (dv["d"]["T"][P10] or 0) > 0.005:
                     dk = K("d", c["name"], h["name"], dv["name"])
-                    rows += row_html("sub dv", E(dv["name"]), dk, dv["d"], f'data-p="{hid}" hidden' + _sub(hid, h, c, dv["name"], dk, dv["d"]))
+                    rows += row_html("sub dv", E(dv["name"]), dk, dv["d"], f'data-p="{hid}" hidden' + _sub(hid, h, c, dv["name"], dk, dv["d"], dv["name"]))
             for t in dv["teams"]:
                 nm = f'{t["name"]} (사업부 소속)' if dv["name"] != "(직속)" and t["name"] == dv["name"] else t["name"]
                 if dv["name"] == "(직속)" and t["name"] == h["name"]: nm = f'{t["name"]} (본부 직속)'
                 if (t["d"]["T"][P10] or 0) > 0.005:
                     tk = K("t", c["name"], h["name"], dv["name"], t["raw"])
-                    extra = _sub(hid, h, c, nm, tk, t["d"]) if dv["name"] == "(직속)" else ""
+                    extra = _sub(hid, h, c, nm, tk, t["d"]) if dv["name"] == "(직속)" else _sub(hid, h, c, nm, tk, t["d"], dv["name"], True)
                     rows += row_html("sub " + ("tm" if dv["name"] != "(직속)" else "dv"), E(nm), tk, t["d"], f'data-p="{hid}" hidden' + extra)
     # 카드: 본부가 1개뿐인 법인(엔텍)은 사업부 단위, 여러 개면 본부 단위
-    if len(c["hqs"]) == 1: CARDS += [e["id"] for e in GD if e.get("par") == f'h{RT["corps"].index(c)}_0']
+    if len(c["hqs"]) == 1: CARDS += [e["id"] for e in GD if e.get("par") == f'h{RT["corps"].index(c)}_0' and not e.get("tm")]
     else: CARDS += [f'h{RT["corps"].index(c)}_{hi}' for hi in range(len(c["hqs"]))]
 GA_BY = {e["id"]: e for e in GD}
 def _ge_svgs(e):
     kw = (e["pu"], e["pg"]); u = min(e["u"], 100); g = min(e["g"], 100); uid = "x" + e["id"].replace("#", "_")
-    return dict(mini=GA.sized(GA.pair(u, g, None, None, "m" + uid, True), 300), big=GA.sized(GA.pair(u, g, None, None, "b" + uid), 480), sm="")
+    return dict(mini=("" if e.get("tm") else GA.sized(GA.pair(u, g, None, None, "m" + uid, True), 300)), big=GA.sized(GA.pair(u, g, None, None, "b" + uid), 480), sm="")
 GDATA = dict(all=GD, cards=CARDS, subs={}, svg={e["id"]: _ge_svgs(e) for e in GD}, target=GA.TARGET, cm=P10)
 for e in GD:
-    if e.get("par"): GDATA["subs"].setdefault(e["par"], []).append(e["id"])
+    if e.get("par") and not e.get("tm"): GDATA["subs"].setdefault(e["par"], []).append(e["id"])
 GDATA_JSON = _j.dumps(GDATA, ensure_ascii=False).replace("</", "<\\/")
 tot = row_html("tot", "전체", "ALL", D)
 def _hq_bar():
@@ -537,7 +541,7 @@ function trend(r){const W=540,H=184,pl=40,pr=14,pt=30,pb=26,cm=GD.cm;const all=r
 function filt(par){tb.querySelectorAll('tbody tr').forEach(tr=>{if(tr.classList.contains('corp')){tr.hidden=true;return}if(tr.dataset.hq)tr.hidden=(tr.dataset.hq!==par)});tb.querySelectorAll('tfoot tr').forEach(t=>t.hidden=true)}
 const chip=(q,cls)=>'<div class="hqc sub '+(q.g>=80?'ok':(q.g>=70?'mid':'lo'))+(cls||'')+'" data-id="'+q.id+'" role="button" tabindex="0"><span class="hqn">'+q.nm+'</span><b>'+q.g.toFixed(1)+'%</b></div>';
 function renderSub(id,par){const sl=GD.subs[par]||[];if(!CID.has(par)||!sl.length){sub.innerHTML='';return}
- const h=A[par];sub.innerHTML='<span class="cgl">사업부별</span>'+chip({id:par,nm:'본부 전체',g:h.g},id===par?' sel':'')+sl.map(sid=>chip({id:sid,nm:A[sid].name,g:A[sid].g},sid===id?' sel':'')).join('');
+ const h=A[par];sub.innerHTML='<span class="cgl">사업부별</span>'+chip({id:par,nm:'본부 전체',g:h.g},id===par?' sel':'')+sl.map(sid=>chip({id:sid,nm:A[sid].name,g:A[sid].g},(sid===id||A[id].dv===sid)?' sel':'')).join('');
  sub.querySelectorAll('.hqc').forEach(e=>{const a=()=>show(e.dataset.id,{noScroll:true});e.onclick=a;e.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();a()}}})}
 function hov(r){const g=det.querySelector('.gtr');if(!g)return;const sv=g.querySelector('svg');if(!sv)return;g.style.position='relative';
  const tip=document.createElement('div');tip.className='gtip';tip.hidden=true;g.appendChild(tip);
@@ -555,7 +559,7 @@ function show(id,o){o=o||{};const r=A[id];if(!r)return;cur=id;const par=r.par||i
  if(r.par){const t=tb.querySelector('tr[data-sid="'+id+'"]');if(t)t.classList.add('hsel2')}
  filt(par);
  const sl=GD.subs[par]||[];
- const subH=sl.length?'<div class="sg"><div class="sgt">사업부별</div><div class="sgl">'+sl.map(sid=>{const q=A[sid];return '<div class="sgi'+(sid===id?' on':'')+'" data-id="'+sid+'">'+GD.svg[sid].sm+'<div class="sgn">'+q.name+'</div><div><b style="color:#B8691A">'+f(q.g)+'%</b> <span style="color:#2A5A9B">'+f(q.u)+'%</span></div></div>'}).join('')+'</div></div>':'';
+ const subH=sl.length?'<div class="sg"><div class="sgt">사업부별</div><div class="sgl">'+sl.map(sid=>{const q=A[sid];return '<div class="sgi'+((sid===id||r.dv===sid)?' on':'')+'" data-id="'+sid+'">'+GD.svg[sid].sm+'<div class="sgn">'+q.name+'</div><div><b style="color:#B8691A">'+f(q.g)+'%</b> <span style="color:#2A5A9B">'+f(q.u)+'%</span></div></div>'}).join('')+'</div></div>':'';
  const gap=T-r.g;
  det.innerHTML='<button class="gx" type="button">닫기 ✕</button><div style="flex:0 0 480px">'+GD.svg[id].big+'</div><div><h3>'+r.name+'</h3><div class="gsb">'+(r.corp||r.cn)+' · 가동대상 '+f(r.T)+'MM · 대기 '+f(r.idle)+'MM '+dl(r.pidle,r.idle,'MM')+'</div>'+(over(r)?'<div class="gw" style="margin-bottom:6px">⚠ 100% 초과 · 데이터 확인 필요</div>':'')+'<div class="gk"><div style="border-top:3px solid #C77B2B"><span style="color:#6B7280">가득률</span><b class="n" style="color:#B8691A">'+f(r.g)+'%</b>전주 '+f(r.pg)+' '+dl(r.pg,r.g,'%p')+'</div><div style="border-top:3px solid #7FA8DA"><span style="color:#6B7280">가동률</span><b class="n" style="color:#2A5A9B">'+f(r.u)+'%</b>전주 '+f(r.pu)+' '+dl(r.pu,r.u,'%p')+'</div></div><div class="gtr">'+trend(r)+'</div></div>';
  det.classList.add('on');det.querySelector('.gx').onclick=()=>{clear();hrows().forEach(h=>setRow(h,false))};

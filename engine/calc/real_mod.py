@@ -230,8 +230,14 @@ for _p in PP.values():
 EXECS = sorted(_ex.values(), key=lambda p: (p["corp"] != "아이티센클로잇", p["hq"], p["org"], p["name"]))
 RDP = sorted([p for p in PP.values() if not p["exec"] and sum(p["rd"]) > 0.005], key=lambda p: (p["corp"] != "아이티센클로잇", p["hq"], p["org"], p["name"]))
 def _rd_names(p):
-    return " · ".join(dict.fromkeys(n.strip() for (c_, n, k), mm in p["projs"].items() if k == "R&D·내부과제" and sum(mm) > 0.005))
-_NP_TG = '''<div class="np-tg" role="group" aria-label="법인 선택"><button type="button" data-c="" aria-pressed="true">전체</button><button type="button" data-c="아이티센클로잇" aria-pressed="false">아이티센클로잇만</button><button type="button" data-c="아이티센엔텍" aria-pressed="false">아이티센엔텍만</button></div>
+    import re as _r3
+    best = {}   # 공백·기호만 다른 같은 과제는 하나로 (코드가 더 긴 쪽 이름을 씀 — 05 현황과 같은 기준)
+    for (c_, n, k), mm in p["projs"].items():
+        if k != "R&D·내부과제" or sum(mm) <= 0.005: continue
+        key = _r3.sub(r"[\s_\-\(\)\[\]]", "", str(n)).lower()
+        if key not in best or len(str(c_)) > len(str(best[key][0])): best[key] = (c_, n.strip())
+    return " · ".join(v[1] for v in best.values())
+_NP_TG = '''<div class="np-tg" role="group" aria-label="법인 선택"><button type="button" data-c="" aria-pressed="true">전체</button><button type="button" data-c="아이티센클로잇" aria-pressed="false">아이티센클로잇</button><button type="button" data-c="아이티센엔텍" aria-pressed="false">아이티센엔텍</button></div>
       <script>(function(){var d=document.currentScript.closest('details');d.querySelectorAll('.np-tg button').forEach(function(b){b.onclick=function(e){e.preventDefault();var c=b.dataset.c;d.querySelectorAll('.np-tg button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});d.querySelectorAll('tbody tr[data-c]').forEach(function(r){r.hidden=!!c&&r.dataset.c!==c});var f=d.querySelector('tfoot');if(f)f.hidden=!!c;window.dispatchEvent(new Event('resize'))}})})()</script>'''
 
 def np_list_html(open_=False):  # NPCORP_V1
@@ -250,7 +256,7 @@ def np_list_html(open_=False):  # NPCORP_V1
             trs += f'<tr data-c="{cn}"><td class="l">{p["name"]}</td><td class="l np-so">{p["hq"]}{"" if p["org"] == p["hq"] else "<br>" + p["org"]}</td><td class="l">{p["직급"] or "사업부장"}</td>{cells}<td class="strong">{sum(p["T"]):.2f}</td></tr>'
         for p in rd:
             cells = "".join(f'<td class="{cc(i)}{" zero" if v <= 0.005 else ""}">{v:.2f}</td>' for i, v in enumerate(p["rd"]))
-            trs += f'<tr data-c="{cn}"><td class="l">{p["name"]}</td><td class="l np-so">{p["hq"]}{"" if p["org"] == p["hq"] else "<br>" + p["org"]}</td><td class="l np-pj" title="{_rd_names(p)}">{_rd_names(p)}</td>{cells}<td class="strong">{sum(p["rd"]):.2f}</td></tr>'
+            trs += f'<tr data-c="{cn}"><td class="l">{p["name"]}</td><td class="l np-so">{p["hq"]}{"" if p["org"] == p["hq"] else "<br>" + p["org"]}</td><td class="l np-pj" title="{_rd_names(p)}">{('<span class="np-rk">' + p["직급"] + '</span><br>') if p.get("직급") else ""}<span class="np-pn">{_rd_names(p)}</span></td>{cells}<td class="strong">{sum(p["rd"]):.2f}</td></tr>'
         trs += f'<tr class="np-sub" data-c="{cn}"><td class="l" colspan="3">{cn} 소계 (사업부장 + R&amp;D·내부과제)</td>' + "".join(f'<td class="{cc(i)}">{v:.2f}</td>' for i, v in enumerate(tc)) + f'<td>{sum(tc):.2f}</td></tr>'
     foot = "".join(f'<td class="{cc(i)}">{v:.2f}</td>' for i, v in enumerate(tot))
     return f'''<details class="np-list"{" open" if open_ else ""}><summary>비매출 모수 명단 · {" · ".join(sums)}</summary>
@@ -821,7 +827,7 @@ def _s5():
 <details class="grp" data-corp="{CORP_KEY[corp]}">
   <summary>
     <span class="g-name"><span class="kind {"k-rd" if kind == "R&D" else "k-in"}">{kind.replace("&", "&amp;")}</span>{name.strip()}</span>
-    <span class="g-org"><b class="g-code">{code}</b><br><span class="g-hq">{hq} · {", ".join(orgs[:2])}{" 외" if len(orgs) > 2 else ""}</span></span>
+    <span class="g-org"><b class="g-code">{code}</b><br><span class="g-hq">{corp} · {hq} · {", ".join(orgs[:2])}{" 외" if len(orgs) > 2 else ""}</span></span>
     <span class="g-m"><em>인원</em>{len(lst)}명</span>
     <span class="g-m"><em>연간</em>{sum(sum(mm) for _, mm in lst):.2f} MM</span>
     <span class="g-m"><em>{CM}월</em>{m10:.2f} MM</span>
@@ -961,7 +967,7 @@ ORG_CSS = ORG_CSS + r"""
   .np-tab td.np-so,table.ca-fix td.l.np-so{white-space:normal!important;word-break:keep-all!important;overflow-wrap:normal!important;font-size:12px;line-height:1.35}
   .np-tg{display:flex;gap:6px;padding:8px 14px 4px}.np-tg button{font:inherit;font-size:12.5px;padding:4px 12px;border:1px solid var(--line);background:#fff;color:#374151;cursor:pointer;border-radius:999px}.np-tg button[aria-pressed=true]{background:#1F3A5F;border-color:#1F3A5F;color:#fff}
   .np-tab tr[hidden]{display:none}
-  .np-tab td.np-pj{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:#4B5563}
+  .np-tab td.np-pj{white-space:normal!important;overflow:visible;text-overflow:clip;line-height:1.35;word-break:keep-all;overflow-wrap:anywhere}.np-tab td.np-pj .np-rk{font-size:13px;color:#1F2937}.np-tab td.np-pj .np-pn{font-size:11.5px;color:#6B7280}
   #idle td.plan,#proj td.l:nth-last-child(2){max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #idle td.plan .trn{font-size:.82em;color:#6B7280;margin-top:2px;overflow:hidden;text-overflow:ellipsis}
   #idle td.zero,#proj td.zero{color:#C0C4CC}
