@@ -271,7 +271,7 @@ def _prow(p):
     plan = X._next_plan(p)
     ps = (plan[0][1] + (f" 외 {len(plan)-1}건" if len(plan) > 1 else "")) if plan else (X.quit_txt(p) or "미정")
     if p.get("idle_note"): ps = str(p["idle_note"]).strip()
-    return (f'<tr data-a="{p["idle"][P9]:.4f}" data-b="{p["idle"][P10]:.4f}" data-mon="{sum(1 for v in p["idle"][:P10 + 1] if v >= 0.5)}"{" data-exec=1" if p["exec"] else ""}><td class="l">{E(p["name"])}</td><td class="l">{E(p["org"])}</td><td class="l">{E(p["직무"] or "—")}</td><td class="l">{E(p["직급"] or "—")}</td>'
+    return (f'<tr data-a="{p["idle"][P9]:.4f}" data-b="{p["idle"][P10]:.4f}" data-mon="{sum(1 for v in p["idle"][:P10 + 1] if v >= 0.5)}"{" data-exec=1" if p["exec"] else ""}><td class="l">{E(p["name"])}</td><td class="l">{X._org_br(E(p["org"]))}</td><td class="l">{E(p["직무"] or "—")}</td><td class="l">{E(p["직급"] or "—")}</td>'
             + "".join(f'<td class="old {"na" if p["T"][m] <= 0.005 else ("z" if p["idle"][m] <= 0.005 else "")}">{"" if p["T"][m] <= 0.005 else "%.2f" % p["idle"][m]}</td>' for m in OLD)
             + "".join(f'<td class="{"na" if p["T"][m] <= 0.005 else ("z" if p["idle"][m] <= 0.005 else "")}{" cm" if m == P10 else ""}">{"" if p["T"][m] <= 0.005 else "%.2f" % p["idle"][m]}</td>' for m in IM)
             + f'<td class="l pj" title="{E(ps)}">{E(ps)}{X.trn_html(p)}</td><td><span class="st {st[1]}">{E(st[0])}</span></td></tr>')
@@ -308,7 +308,7 @@ for c in RT["corps"]:
 
 # ---------- slide 5: 인사 변동 ----------
 hr_rows = "".join(f'<tr><td><span class="st {"st-ok" if h["kind"] in ("입사", "복직") else ("st-warn" if h["kind"] == "퇴사" else "st-mid")}">{E(h["kind"])}</span></td>'
-                  f'<td class="l">{E(h["name"])}</td><td class="l">{E(h["corp"])} · {E(h["org"])}</td><td class="l">{E(X._job(h["corp"], h["name"]))}</td><td class="l">{E(X._rank(h["corp"], h["name"]))}</td><td>{h["date"]:%m.%d}</td><td class="l">{E(h["imp"])}</td></tr>' for h in X.HRE) \
+                  f'<td class="l">{E(h["name"])}</td><td class="l">{X._org_cell(h, E)}</td><td class="l">{E(X._job(h["corp"], h["name"]))}</td><td class="l">{E(X._rank(h["corp"], h["name"]))}</td><td>{h["date"]:%m.%d}</td><td class="l">{E(h["imp"])}</td></tr>' for h in X.HRE) \
           or f'<tr><td colspan="7">{P10 + 1}월 인사 변동 없음</td></tr>'
 
 # ---------- 휴직 인원 (인사 변동 아래) ----------
@@ -337,7 +337,7 @@ def _ptable(ps, kind):
             + ('<th>대기<small>' + f"{P10 + 1}월" + '</small></th><th>상태</th>' if kind == "new" else '<th>대기<small>' + E(BLs) + '</small></th><th class="l">투입 프로젝트</th>') + '</tr></thead>')
     trs = ""
     for p in sorted(ps, key=lambda p: (p["corp"], p["org"], p["name"])):
-        lead = f'<td class="l"><b>{E(p["name"])}</b></td><td class="l">{E(p["org"])}</td><td class="l">{E(p["직무"] or "—")}</td><td class="l">{E(p["직급"] or "—")}</td>'
+        lead = f'<td class="l"><b>{E(p["name"])}</b></td><td class="l">{X._org_br(E(p["org"]))}</td><td class="l">{E(p["직무"] or "—")}</td><td class="l">{E(p["직급"] or "—")}</td>'
         if kind == "new":
             st = status(p); trs += f'<tr>{lead}<td>{p["idle"][P10]:.2f}</td><td><span class="st {st[1]}">{E(st[0])}</span></td></tr>'
         else:
@@ -372,7 +372,7 @@ tr.tot .rise,tr.tot .fall{color:#fff}td.cm,th.cm{background:#EAF1FA;font-weight:
 .ib{margin-bottom:18px}.ibh{display:flex;gap:12px;align-items:baseline;margin-bottom:6px}.ibh b{font-size:18px;color:var(--navy)}.ibh span{color:var(--muted);font-size:13.5px}
 .it td{font-size:14px;padding:7px 8px}
 table.it{table-layout:fixed;width:100%}
-table.it th:nth-child(1){width:7%}table.it th:nth-child(2){width:12%}table.it th:nth-child(3){width:10%}table.it th:nth-child(4){width:7%}
+table.it th:nth-child(1){width:7%}table.it th:nth-child(2){width:12%}table.it th:nth-child(3){width:9%}table.it th:nth-child(4){width:6.5%}
 {IT_W}
 table.it td{overflow:hidden;text-overflow:clip;white-space:nowrap}.it td.z{color:#C0C4CC}.it td.pj{max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:clip}
 .st{display:inline-block;padding:2px 9px;font-size:12.5px;font-weight:700}.st-ok{background:#E3F1EB;color:#1F6F54}.st-warn{background:#F8ECE2;color:#A2551B}.st-mid{background:#EEF2F7;color:#3B597A}.st-leave{background:#F1EEF8;color:#5B4B8A}
@@ -439,7 +439,7 @@ ul.sum{font-size:17px!important;line-height:2.25!important}.gc svg{width:100%;ma
 .gst{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:left;margin-top:6px}.gs{padding:6px 10px;border-top:3px solid #C77B2B}.gs.gb{border-top-color:#7FA8DA}.gs span{font-size:12.5px;color:var(--muted)}.gs b{display:block;font-size:22px}.gs.go b{color:#B8691A}.gs.gb b{color:#2A5A9B}
 .gtg{font-size:13.5px;color:#374151;margin-top:8px}.gtg b{color:var(--navy)}.gleg{font-size:12px;color:var(--muted);margin-top:6px}.gleg i{display:inline-block;width:14px;height:4px;margin:0 4px 0 8px;vertical-align:middle;background:#C77B2B}.gleg i.gb{background:#7FA8DA}.gleg i.gg{background:#BFC9D8}
 .cc2{background:#fff;display:grid;grid-template-columns:var(--ccw,518px) minmax(0,1fr);gap:10px 35px;padding:14px 16px;min-width:0;overflow:hidden;align-items:center;border-left:5px solid var(--steel)}.cc2d{text-align:center;display:flex;justify-content:center;align-items:center}.cc2r{min-width:0}.cc2 .rkt{font-size:12.5px;font-weight:700;color:var(--muted);margin:10px 0 2px}.cc2 .cch{margin-bottom:4px}
-.cc2 .gs b{font-size:18px}.cc2 .rkl .pl{font-size:11.5px;padding:1px 7px}.cc2 .rn{font-size:14px}.cc2 .rm{text-align:right;padding-right:10px;font-size:13.5px;color:#4A5A70;font-variant-numeric:tabular-nums}.cc2 .rkh .rm{font-size:11.5px;font-weight:700;color:#4B5563}.cc2 .rv{font-size:15px;padding-right:6px}.cc2 .ru{font-size:15px;font-weight:800;color:var(--navy);padding-right:6px}.cc2 .gst{gap:8px}.cc2 .gs span{font-size:15px;font-weight:600;color:#4B5563}.gs.go.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:0 12px;align-items:start}.gs.go.two .gsi{flex:0 0 auto}.gs.go.two .gsi:last-child b{color:#8A5A1F}.lgd{display:flex;gap:18px;font-size:15px;font-weight:700;margin:2px 0 8px}.lgd .lu{color:#2A5A9B}.lgd .lo{color:#C77B2B}.fbar{display:flex;gap:18px;align-items:center;margin:2px 0 10px;font-size:14px}.fbar label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.fbar select{font:inherit;padding:3px 6px;border:1px solid #C9D2DF;background:#fff}tr.flt{display:none!important}.cc2 ol.rkl li,.cc2 .rkh{grid-template-columns:minmax(120px,1.3fr) minmax(0,.8fr) minmax(0,.7fr) minmax(0,.8fr) minmax(0,.7fr)}.cc2 .rkh .hc{grid-column:span 2;text-align:center;font-weight:700;color:var(--navy)}.cc2 .rd{padding-left:4px}.cc2 .rm{padding-right:18px}.cc2 .rkl .pl{font-size:11px;padding:1px 5px}.gcard{display:flex;flex-direction:column}.gcard .gdial{margin:auto 0}.cc2 ol.rkl li,.cc2 .rkh{grid-template-columns:calc(50% + 5px) minmax(0,1fr) minmax(0,1fr);column-gap:0}.cc2 .pr{display:flex;align-items:center;justify-content:flex-start;gap:6px;min-width:0;padding-left:10px}.cc2 .rkh .hc{grid-column:auto;text-align:left;padding-left:10px}.cc2 .rv,.cc2 .ru{padding-right:0}.cc2 .rd{padding-left:0}
+.cc2 .gs b{font-size:18px}.cc2 .rkl .pl{font-size:11.5px;padding:1px 7px}.cc2 .rn{font-size:14px}.cc2 .rm{text-align:right;padding-right:10px;font-size:13.5px;color:#4A5A70;font-variant-numeric:tabular-nums}.cc2 .rkh .rm{font-size:11.5px;font-weight:700;color:#4B5563}.cc2 .rv{font-size:15px;padding-right:6px}.cc2 .ru{font-size:15px;font-weight:800;color:var(--navy);padding-right:6px}.cc2 .gst{gap:8px}.cc2 .gs span{font-size:15px;font-weight:600;color:#4B5563}.gs.go.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:0 12px;align-items:start}.gs.go.two .gsi{flex:0 0 auto}.gs.go.two .gsi:last-child b{color:#8A5A1F}.lgd{display:flex;gap:18px;font-size:15px;font-weight:700;margin:2px 0 8px}.lgd .lu{color:#2A5A9B}.lgd .lo{color:#C77B2B}.fbar{display:flex;gap:18px;align-items:center;margin:2px 0 10px;font-size:14px}.fbar label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.fbar select{font:inherit;padding:3px 6px;border:1px solid #C9D2DF;background:#fff}tr.flt{display:none!important}.cc2 ol.rkl li,.cc2 .rkh{grid-template-columns:minmax(120px,1.3fr) minmax(0,.8fr) minmax(0,.7fr) minmax(0,.8fr) minmax(0,.7fr)}.cc2 .rkh .hc{grid-column:span 2;text-align:center;font-weight:700;color:var(--navy)}.cc2 .rd{padding-left:4px}.cc2 .rm{padding-right:18px}.cc2 .rkl .pl{font-size:11px;padding:1px 5px}.gcard{display:flex;flex-direction:column}.gcard .gdial{margin:auto 0}.gcard{padding-bottom:0}.gcard .gst{margin-top:auto;box-sizing:border-box;align-items:center}.gcard .gst .gs{display:flex;flex-direction:column;justify-content:center}.cc2 ol.rkl li,.cc2 .rkh{grid-template-columns:calc(50% + 5px) minmax(0,1fr) minmax(0,1fr);column-gap:0}.cc2 .pr{display:flex;align-items:center;justify-content:flex-start;gap:6px;min-width:0;padding-left:10px}.cc2 .rkh .hc{grid-column:auto;text-align:left;padding-left:10px}.cc2 .rv,.cc2 .ru{padding-right:0}.cc2 .rd{padding-left:0}
 #gcards{display:flex;flex-wrap:wrap;gap:8px 26px;margin:6px 0 12px;align-items:center}.cgrp{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:12px;flex:var(--n) 1 calc(var(--n)*215px);min-width:calc(var(--n)*170px)}
 .gc{background:#fff;padding:12px 10px 10px;text-align:center;min-width:0;cursor:pointer;border:2px solid transparent;transition:transform .18s,box-shadow .18s,border-color .18s}.gc:hover{border-color:#B9C7DA}
 .gc.sel{border-color:#1F3A5F;transform:scale(1.05);box-shadow:0 8px 22px rgba(15,41,66,.18);z-index:2;position:relative}
@@ -471,6 +471,12 @@ JS = r"""
 const S=[...document.querySelectorAll('.slide')];let i=0;
 function go(n){i=Math.max(0,Math.min(S.length-1,n));S.forEach((s,k)=>s.classList.toggle('on',k===i));document.getElementById('pg').textContent=(i+1)+' / '+S.length;location.hash='s'+(i+1)}
 document.addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();go(i+1)}if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();go(i-1)}if(e.key==='Home')go(0);if(e.key==='End')go(S.length-1)});
+/* 화면 비례 확대: 큰 화면·전체 화면에서 옆이 휑하지 않게, 슬라이드 전체를 같은 비율로 키움 (1500px 기준 · 1~2배) */
+(function(){const yr=document.querySelector('.s1r .yr'),gs=document.querySelector('.gcard .gst');if(yr&&gs&&window.ResizeObserver){new ResizeObserver(()=>{if(yr.offsetHeight)gs.style.height=yr.offsetHeight+'px'}).observe(yr)}})();
+(function(){const DW=1500,DH=830,TOP=52,d=document.querySelector('.deck'),tp=document.querySelector('.top');
+ function fit(){if(!matchMedia('screen').matches)return;const w=innerWidth,h=innerHeight;let z=Math.max(Math.min(w/DW,(h-TOP)/DH),w/1900);z=Math.max(1,Math.min(2,z));z=Math.round(z*100)/100;
+  document.documentElement.style.setProperty('--u',z>1?'0px':'');tp.style.zoom=z>1?z:'';d.style.top=(TOP*(z>1?z:1))+'px';S.forEach(s=>s.style.zoom=z>1?z:'')}
+ fit();addEventListener('resize',fit);document.addEventListener('fullscreenchange',()=>setTimeout(fit,60))})();
 document.getElementById('prev').onclick=()=>go(i-1);document.getElementById('next').onclick=()=>go(i+1);
 const mt=document.getElementById('mtog');if(mt)mt.onclick=()=>{const o=document.body.classList.toggle('show-m');mt.textContent=o?'전월 확정 비교 숨기기':'{ML_JS} 대비 보기'};
 document.getElementById('full').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()};
@@ -578,8 +584,11 @@ document.querySelectorAll('.cc2 ol.rkl li').forEach(li=>{const id=GD.cards.find(
 LG = f'<div class="lg"><span><i style="background:{X.C2}"></i>가득률</span><span><i style="background:{X.C1}"></i>가동률</span><span>실선 = 실적 · 점선 = 예상</span></div>'
 _n_im = len(IM); _k_lv = 12 - P10   # 월 열 개수 (달이 지날수록 줄어듦 → 비고 열이 나머지 너비)
 IT_W = ("".join(f"table.it th:nth-child({5 + i}){{width:4.6%}}" for i in range(K_OLD))
-        + "".join(f"table.it th:nth-child({5 + K_OLD + i}){{width:5.5%}}" for i in range(_n_im))
-        + f"table.it th:nth-child({5 + K_OLD + _n_im}){{width:{33 + 5.5 * (4 - _n_im):.1f}%}}table.it th:nth-child({6 + K_OLD + _n_im}){{width:9%}}"
+        + "".join(f"table.it th:nth-child({5 + K_OLD + i}){{width:4.4%}}" for i in range(_n_im))
+        + f"table.it th:nth-child({5 + K_OLD + _n_im}){{width:{100 - 7 - 12 - 9 - 6.5 - 9 - 4.4 * _n_im:.1f}%}}table.it th:nth-child({6 + K_OLD + _n_im}){{width:9%}}"
+        + "".join(f"table.it:not(.fold-old) th:nth-child({k}){{width:{w}%}}" for k, w in [(1, 6), (2, 10), (3, 8), (4, 6)])   # 1~N월을 펼친 상태: 월 열이 늘어도 표가 화면 안에 들어오게
+        + "".join(f"table.it:not(.fold-old) th:nth-child({5 + i}){{width:3.6%}}" for i in range(K_OLD + _n_im))
+        + f"table.it:not(.fold-old) th:nth-child({5 + K_OLD + _n_im}){{width:{100 - 30 - 8 - 3.6 * (K_OLD + _n_im):.1f}%}}table.it:not(.fold-old) th:nth-child({6 + K_OLD + _n_im}){{width:8%}}"
         + "table.it.fold-old .old{display:none}table.it tr[data-b] td:nth-child(2){font-size:.84em;letter-spacing:-.2px;color:#4B5563}table.it .trn{font-size:.82em;color:#6B7280;margin-top:2px}")
 LV_W = ("".join(f"table.lvt th:nth-child({7 + i}){{width:6%}}" for i in range(_k_lv))
         + f"table.lvt th:nth-child({7 + _k_lv}){{width:{13 + 6 * (3 - _k_lv)}%}}")
@@ -696,6 +705,8 @@ CSS += r"""
 """
 
 CSS = CSS.replace("{IT_W}", IT_W).replace("{LV_W}", LV_W)
+import re as _re_fit
+CSS = _re_fit.sub(r"(\d*\.?\d+)vw", lambda m: "calc(var(--u,1vw)*" + m.group(1) + ")", CSS)   # 화면 비례 확대(fit)를 켜면 --u=0 으로 두어 이중 확대 방지
 page = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MM-Compass (MM 나침반) · 회의용 · {E(WEEK_LABEL)}</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,{ICON_URI}"><style>{CSS}</style></head><body>
 <div class="top"><b class="tbn"><img class="tbi" alt="" src="data:image/svg+xml,{ICON_URI}">MM-Compass <small style="font-weight:500;opacity:.8">(MM 나침반)</small></b><span class="wk">{E(WEEK_LABEL)} · 데이터 기준 {E(ASOF)} · {E(MEET)}</span><span class="sp"></span>

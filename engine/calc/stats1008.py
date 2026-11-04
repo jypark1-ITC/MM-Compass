@@ -59,6 +59,7 @@ EXTRA_IDLE = [dict(corp="아이티센클로잇", sabun="50149", hq="AX사업본�
 # ---------------- 대시보드 반영 ----------------
 MERGE_INTO = {("아이티센클로잇", "EC2사업부"): "EC3팀", ("아이티센클로잇", "ES사업부"): "ES1팀"}   # 통계표는 사업부장 행을 팀에 합쳐 둠
 LOG = []
+AUTO_T = []   # 가동대상을 최신 목록으로 덮은 조직 (corp, 팀)
 def _team_of(corp, hq, dv, tm):
     return tm if tm != "(직속)" else (dv if dv != "(직속)" else hq)
 
@@ -126,12 +127,22 @@ def _fresh_tn(FR):
 
 def apply_leaf(leaf, M=12):
     """조직 단위 숫자를 통계 파일(10.08)로 맞춤: 가동MM·이행(Sold+New)·제안·R&D (1~12월). 대기 = 가동MM − 투입"""
-    ST = load(); LOG.clear()
+    ST = load(); LOG.clear(); AUTO_T.clear()
     FR = _fresh(); keep = {k: {f: list(leaf[k][f]) for f in ("ex", "pr", "rd", "np")} for k in leaf if keep_months(k[0], k in FR)}
     keepT = {k: list(leaf[k]["T"]) for k in leaf if k in T_FROM_LIST}
     keyed = {}
     for k in leaf:
         tn = _team_of(*k); keyed.setdefault((k[0], tn), []).append(k)
+    # 가동대상MM 자동 판별: 통계 파일(10.08)과 최신 가동인력목록·통합인사정보의 당월 이후 가동대상이 다른 조직은
+    # 사람이 없어도 최신 자료를 따름 (퇴사·전배·입사 등). 같으면 통계 값 그대로.
+    for (corp, tn), s in ST.items():
+        ks = keyed.get((corp, tn), []) + [k for (c2, t2), kk in keyed.items() for k in kk if c2 == corp and MERGE_INTO.get((c2, t2)) == tn]
+        if not ks: continue
+        if any(abs(sum(leaf[k]["T"][m] for k in ks) - s["T"][m]) > 0.01 for m in range(CUR_M, M)):
+            for k in ks:
+                if k not in keepT:
+                    keepT[k] = list(leaf[k]["T"])
+            AUTO_T.append((corp, tn))
     for (corp, tn), s in ST.items():
         file = dict(T=s["T"], ex=[a + b for a, b in zip(s["sold"], s["new"])], pr=s["pr"], rd=s["rd"])
         main = keyed.get((corp, tn), [])

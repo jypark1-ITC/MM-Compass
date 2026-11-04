@@ -125,7 +125,17 @@ def apply(df, notes, year):
             same_p = df[live & (df["법인"] == src["법인"]) & ((df["그룹사번"].apply(_gid) == _gid(src["그룹사번"])) if _gid(src["그룹사번"]) is not None else (df["성명"] == name))]
             there = same_p[(same_p["팀"] == t0["팀"]) & (same_p["사업부"] == t0["사업부"])]
             if len(there) and float(there[[M[i] for i in range(dmv.month - 1, 12)]].sum().sum()) > 0.001:   # 인사자료에 이미 새 소속으로 들어 있음
-                res.append(dict(ok=True, name=name, kind="조직이동", date=n["date"], dept=dept, team=str(t0["팀"]), msg=f"인사자료에 이미 {t0['팀']}으로 들어 있어 달라지는 것 없음")); moved_ok.add(id(n)); continue
+                # 이전 소속(가동인력목록)에 같은 사람 값이 이동일 이후에도 남아 있으면 0으로 정리 → 두 팀에 이중 집계되지 않게 (2026-11-03)
+                f_ = _ratio(year, dmv.month, lambda d: d >= dmv); cut = []
+                for i in idxs:
+                    if i in there.index: continue
+                    for mi, m in enumerate(M, 1):
+                        if mi < dmv.month: continue
+                        old_v = float(df.at[i, m] or 0); new_v = round(old_v * (1 - f_), 4) if mi == dmv.month else 0.0
+                        if abs(old_v - new_v) > 0.0001: df.at[i, m] = new_v; cut.append(f"{m} {old_v:.2f}→{new_v:.2f}")
+                res.append(dict(ok=True, name=name, kind="조직이동", date=n["date"], dept=dept, team=str(t0["팀"]),
+                                msg=(f"인사자료에 이미 {t0['팀']}으로 들어 있음 · 이전 소속 값 정리: " + " · ".join(cut)) if cut else f"인사자료에 이미 {t0['팀']}으로 들어 있어 달라지는 것 없음"))
+                moved_ok.add(id(n)); continue
             row = {c: src[c] for c in df.columns}; row.update(법인=t0["법인"], 본부=t0["본부"], 사업부=t0["사업부"], 팀=t0["팀"], 출처="인사 변동 입력", 비고="조직이동 " + n["date"])
             for mi, m in enumerate(M, 1):
                 ex = sum(float(df.at[i, m] or 0) for i in idxs)   # 이 사람 행이 둘 이상이어도 합쳐서 옮김

@@ -88,6 +88,7 @@ def events(year=2026, month=None):
     t, i, MC, attr, cl, et, hd = load()
     lo = dt.date(year, month, 1); hi = (dt.date(year + 1, 1, 1) if month == 12 else dt.date(year, month + 1, 1)) - dt.timedelta(days=1)
     lo_q = lo - dt.timedelta(days=1)   # 전월 말일 퇴사 = 당월부터 제외
+    while lo_q.weekday() >= 5: lo_q -= dt.timedelta(days=1)   # 말일이 주말이면 마지막 영업일(금)까지 (예: 10/30 퇴사 → 11월 인사변동에 표시)
     tgt = {}
     for _, r in t.iterrows():
         k = (r["법인"], gid(r["그룹사번"])); v = tgt.setdefault(k, [0.0, 0.0])
@@ -121,6 +122,24 @@ def events(year=2026, month=None):
     scan(hd2.drop_duplicates("그룹사번", keep="last"), "아이티센클로잇",
          lambda r: " · ".join(x for x in ["AX사업본부", str(r["사업부"]).split("_")[-1], str(r["팀"]).split("_")[-1]] if x and x != "nan"),
          lambda r: "계약직(일반)" if r["직원구분"] not in ("정규직", "촉탁직", "임원") else "")
+    # 사이트 '인사 변동 제출'(반영)의 조직이동 중 목록·인사자료의 전입/전출일자로 잡히지 않은 것 → 전출+전입으로 추가 (표에서 '전배'로 합쳐짐)
+    try:
+        import cfg as _cfg
+        for n_ in _cfg.HR_NOTES:
+            if n_.get("kind") != "조직이동" or n_.get("status") not in (None, "반영"): continue
+            nd = _d(n_.get("date"))
+            if not nd or not (lo <= nd <= hi): continue
+            if any(e_["name"] == n_["name"] and e_["kind"] in ("전입", "전출") and abs((e_["date"] - nd).days) <= 3 for e_ in ev): continue
+            parts = [x.strip() for x in str(n_["dept"]).split(" · ")]
+            corp_ = parts[0]; src_org = " · ".join(x for x in parts[1:] if x != "(직속)")
+            hit = hd2[hd2["성명"] == n_["name"]]
+            if hit.empty: continue
+            r_ = hit.iloc[-1]
+            dst_org = " · ".join(x for x in ["AX사업본부", str(r_["사업부"]).split("_")[-1], str(r_["팀"]).split("_")[-1]] if x and x != "nan")
+            if dst_org == src_org: continue
+            add("전출", corp_, r_, nd, src_org); add("전입", corp_, r_, nd, dst_org)
+    except Exception as ex_:
+        print("hr notes events skip:", ex_)
     seen = set(); out = []
     for e_ in sorted(ev, key=lambda x: (x["date"], x["kind"])):
         k = (e_["kind"], e_["name"], e_["date"])

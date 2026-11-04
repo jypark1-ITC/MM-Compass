@@ -160,10 +160,10 @@ def build():
     MC = [f"2026년_{m}월" for m in range(1, 13)]
     for x in (c, e): x[MC] = x[MC].apply(pd.to_numeric, errors="coerce").fillna(0.0)
     # SOLD 코드 → 구분 (규칙 적용된 값)
-    sold = pd.concat([c, e]); kmap = {}
+    sold = pd.concat([c, e]); kmap = {}; kall = {}; kpers = {}   # kall: 9자리 코드의 구분 후보 (같은 코드에 P(제안)·C(이행)가 함께 있을 수 있음)
     for _, r in sold.iterrows():
         k = str(r["코드"])[:9]
-        if k: kmap.setdefault(k, r["구분"])
+        if k: kmap.setdefault(k, r["구분"]); kall.setdefault(k, set()).add(r["구분"]); kpers.setdefault((str(r["성명"]).strip(), k), set()).add(r["구분"])
     pjmap = {str(r["PJT 명"]).strip(): r["구분"] for _, r in sold.iterrows()}
     # 인원 현재 소속 (당월 기준)
     t["_g"] = t["그룹사번"].apply(gid)
@@ -238,8 +238,15 @@ def build():
         for x in rows:
             used.add(id(x))
             code9 = x["code"][:9]
-            kind = kmap.get(code9) if code9 and code9 not in ("N/A", "#N/A") else None
-            if kind is None: kind = pjmap.get(x["pjt"])
+            kind = None
+            if code9 and code9 not in ("N/A", "#N/A"):
+                _kp = kpers.get((p["name"], code9)) or set()
+                if len(_kp) == 1: kind = next(iter(_kp))                  # 같은 사람·같은 코드의 SOLD 구분
+                elif len(kall.get(code9, ())) == 1: kind = next(iter(kall[code9]))
+                elif len(kall.get(code9, ())) > 1:                        # P(제안)·C(이행) 둘 다 있는 코드 → 계획 파일의 '제안/이행' 칸을 따름
+                    _kr = x["kind_raw"]
+                    kind = "제안" if "제안" in _kr else ("R&D·내부과제" if "R&D" in _kr else ("이행" if "이행" in _kr else None))
+            if kind is None and not (code9 and len(kall.get(code9, ())) > 1): kind = pjmap.get(x["pjt"])
             if kind is None:
                 kr = x["kind_raw"]
                 kind = "제안" if "제안" in kr else ("R&D·내부과제" if "R&D" in kr else "이행")

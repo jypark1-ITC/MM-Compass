@@ -39,8 +39,12 @@ def resolve_inputs(storage, label, exclude_id=None):
     """자리별 입력 파일 → (inputs, short, dept_files, files목록, used목록, 경고)"""
     base_dir = os.path.join(storage, "inputs", "base")
     base = json.load(open(os.path.join(base_dir, "base.json"), encoding="utf-8"))
-    pick = {r: dict(path=os.path.join(base_dir, v["file"]), orig=v["orig"], date=v["date"], short=v.get("short"), src="기본") for r, v in base.items()}
+    pick = {r: dict(path=os.path.join(base_dir, v["file"]), orig=v["orig"], date=v["date"], short=v.get("short"), src="기본", at=v.get("at", "")) for r, v in base.items() if not r.startswith("_")}
     dept_files = {}; warns = []
+    for d in base.get("_dept", []):   # 기본 자료에 포함된 부서 투입계획 (팀원 전달용 등 — 업로드가 없는 새 설치에서도 같은 계산이 되게)
+        key = (d["corp"], d["hq"], d["dv"], d["tm"]); nm = " · ".join(x for x in key[1:] if x) or key[0]
+        dept_files[key] = dict(path=os.path.join(base_dir, d["file"]), fmt=d["fmt"], corp=d["corp"], hq=d["hq"], dv=d["dv"], tm=d["tm"], label=f"{nm}({d['date']})",
+                               orig=d["orig"], date=d["date"], src="기본", upload_id=None, at=d.get("at", ""))
     with _db(storage) as c:
         # 관리자가 '반영' 확정한 업로드만 계산에 씀 (확인 대기·제출·보류·반려는 제외)
         ups = c.execute("SELECT * FROM uploads WHERE status='반영' AND week<=? AND id<>? ORDER BY id", (label, exclude_id or -1)).fetchall()
@@ -150,11 +154,25 @@ def _set(storage, label, **kw):
     st = read_status(storage, label) or {}; st.update(kw)
     json.dump(st, open(p, "w", encoding="utf-8"), ensure_ascii=False)
 
+def _clean_hr_header(out):
+    """센터에서 정렬해서 내려받으면 머리글에 정렬 표시가 붙음 ('성명▲' 등) → 제거해서 원래 열 이름으로 (2026-11-03)"""
+    import re, openpyxl
+    wb = openpyxl.load_workbook(out); ws = wb.worksheets[0]; ch = 0
+    for row in ws.iter_rows(min_row=1, max_row=1):
+        for c in row:
+            if isinstance(c.value, str):
+                v = re.sub(r"[\s▲▼△▽↑↓⇧⇩⏶⏷]+$", "", c.value.strip())
+                if v != c.value: c.value = v; ch += 1
+    if ch: wb.save(out)
+
 def _prep_hr(path, work):
     out = os.path.join(work, "hr.xlsx")
-    if path.lower().endswith(".xlsx"): shutil.copy(path, out); return
-    import pandas as pd   # .xls → .xlsx (xlrd 필요)
-    pd.read_excel(path, header=None).to_excel(out, header=False, index=False)
+    if path.lower().endswith(".xlsx"): shutil.copy(path, out)
+    else:
+        import pandas as pd   # .xls → .xlsx (xlrd 필요)
+        pd.read_excel(path, header=None).to_excel(out, header=False, index=False)
+    try: _clean_hr_header(out)
+    except Exception: pass   # 정리에 실패해도 원래 파일 그대로 진행
 
 def _strip_comments(a):
     """관리자 화면에서 수기 코멘트 칸 제거 (자동 작성 안 하는 칸)"""
@@ -181,9 +199,17 @@ def _hr_notes(storage):
         rows = c.execute("SELECT h.id,h.dept,h.name,h.sabun,h.kind,h.date,h.to_org,h.memo,h.status,u.role FROM hr_notes h LEFT JOIN users u ON u.id=h.user_id "
                          "WHERE h.status='반영' OR (u.role='admin' AND h.status IN ('접수','확인')) ORDER BY h.date, h.id").fetchall()
         c.close()
-        return [dict(r) for r in rows]
+        out = [dict(r) for r in rows]
     except Exception:
-        return []
+        out = []
+    try:   # 기본 자료에 함께 둔 인사 변동 입력 (새 설치 DB에는 없으므로)
+        bp = os.path.join(storage, "inputs", "base", "hr_notes.json")
+        if os.path.exists(bp):
+            have = {(n.get("name"), n.get("kind"), n.get("date")) for n in out}
+            out += [n for n in json.load(open(bp, encoding="utf-8")) if (n.get("name"), n.get("kind"), n.get("date")) not in have]
+    except Exception:
+        pass
+    return out
 
 def _job(storage, label, user):
     work = os.path.join(storage, "work", label) + os.sep

@@ -465,6 +465,16 @@ def _s1():
   </section>'''
 
 # ---- 02 인사 변동 (당월) ----
+def _org_cell(h, esc=lambda x: x):
+    """인사 변동 소속 칸: 전배처럼 '이전 → 이후'가 길면 화살표까지만 윗줄, 이후 소속은 아랫줄 전체"""
+    full = f'{h["corp"]} · {h["org"]}'
+    if " → " in full and len(full) > 60:
+        a, b = full.split(" → ", 1)
+        return esc(a) + " →<br>" + esc(b)
+    return esc(full)
+def _org_br(s):
+    """사업부 이름 'AX Consulting & Eng 사업부'는 Eng 앞에서 줄바꿈"""
+    return s.replace("&amp; Eng 사업부", "&amp;<br>Eng 사업부").replace("& Eng 사업부", "&<br>Eng 사업부")
 def _merge_events():
     out = []; used = set()
     for i, e in enumerate(EV):
@@ -507,7 +517,7 @@ def hr_section():
     chips = "".join(f'<span class="hrc hrc-f" role="button" tabindex="0" data-k="{k}" title="누르면 {k} 인원만 표시 (다시 누르면 전체)"><b>{c.get(k, 0)}</b>{k}</span>' for k in keys)
     plus = sum(h["delta"] for h in HRE if h["delta"] > 0); minus = -sum(h["delta"] for h in HRE if h["delta"] < 0)
     trs = "".join(f'<tr data-k="{h["kind"]}"><td class="c"><span class="pill {PILL.get(h["kind"], "p-mid")}">{h["kind"]}</span></td><td class="l">{h["name"]}<span class="newtag">신규</span></td>'
-                  f'<td class="l">{h["corp"]} · {h["org"]}</td><td class="l">{_job(h["corp"], h["name"])}</td><td class="l">{_rank(h["corp"], h["name"])}</td><td class="c">{h["date"]:%m.%d}</td><td class="l">{"" if "변동 없음" in h["imp"] else h["imp"]}</td><td class="l muted">{h["note"]}</td></tr>' for h in HRE)
+                  f'<td class="l">{_org_cell(h)}</td><td class="l">{_job(h["corp"], h["name"])}</td><td class="l">{_rank(h["corp"], h["name"])}</td><td class="c">{h["date"]:%m.%d}</td><td class="l">{"" if "변동 없음" in h["imp"] else h["imp"]}</td><td class="l muted">{h["note"]}</td></tr>' for h in HRE)
     if not trs: trs = f'<tr><td class="c muted" colspan="8">{CM}월 등록된 인사 변동 없음</td></tr>'
     return f'''
   <!-- HR -->
@@ -1196,7 +1206,7 @@ ORG_CSS = ORG_CSS + r"""
   html{scrollbar-gutter:stable}
   #s2 .panel>table{table-layout:fixed;width:100%}
   #s2 .panel{overflow-x:hidden}
-  #s2 table th:nth-child(1){width:68px}#s2 table th:nth-child(2){width:78px}#s2 table th:nth-child(4){width:84px}#s2 table th:nth-child(5){width:70px}#s2 table th:nth-child(6){width:62px}#s2 table th:nth-child(7){width:15%}#s2 table th:nth-child(8){width:11%}
+  #s2 table th:nth-child(1){width:68px}#s2 table th:nth-child(2){width:78px}#s2 table th:nth-child(4){width:124px}#s2 table td:nth-child(4){overflow-wrap:normal}#s2 table th:nth-child(5){width:70px}#s2 table th:nth-child(6){width:62px}#s2 table th:nth-child(7){width:15%}#s2 table th:nth-child(8){width:11%}
   #s2 table td{white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
   #s2 .hr-sum .hrc{box-sizing:border-box;min-width:76px}
   /* 연간 대기 인원: 휴직·퇴사 표시가 옆 칸을 덮지 않게 이름 칸 안에서 줄바꿈 */
