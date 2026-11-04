@@ -2,8 +2,8 @@
    - 구역 = 가장 가까운 section / details 묶음 / .view
    - 펼침·탭 전환 등으로 새로 보이는 표도 자동으로 다시 맞춤 */
 (function(){
-  var MRE=/^\s*(\d{1,2})\s*월/, busy=false, timer=null, LAB=320, MON=(window.innerWidth<1260?54:64), TAIL=76, LCAP=150, LFLOOR=84;
-  var st=document.createElement('style');st.textContent='@media (max-width:1260px){table.ca-fix td,table.ca-fix th,table.ca-meas td,table.ca-meas th{font-size:11px!important;padding-left:3px!important;padding-right:3px!important}}@media (max-width:1160px){table.ca-fix td,table.ca-fix th,table.ca-meas td,table.ca-meas th{font-size:10.5px!important;padding-left:2px!important;padding-right:2px!important}}table.ca-fix td,table.ca-fix th{overflow:hidden;white-space:nowrap}table.ca-fix td.l,table.ca-fix th.l{white-space:normal!important;text-overflow:clip!important;overflow:visible!important;word-break:keep-all;overflow-wrap:anywhere}table.ca-fix th small{display:block}table.ca-meas td,table.ca-meas th{white-space:nowrap!important}';document.head.appendChild(st);
+  var MRE=/^\s*(\d{1,2})\s*월/, busy=false, timer=null, LAB=(window.innerWidth<1300?230:(window.innerWidth<1500?270:320)), MON=(window.innerWidth<1260?46:(window.innerWidth<1500?47:(window.innerWidth<1560?52:64))), TAIL=(window.innerWidth<1300?54:(window.innerWidth<1500?64:76)), LCAP=(window.innerWidth<1300?100:(window.innerWidth<1500?120:150)), LFLOOR=(window.innerWidth<1500?70:84);
+  var st=document.createElement('style');st.textContent='@media (max-width:1560px){table.ca-fix td,table.ca-fix th,table.ca-meas td,table.ca-meas th{font-size:12px!important;padding-left:3px!important;padding-right:3px!important}}@media (max-width:1400px){table.ca-fix td,table.ca-fix th,table.ca-meas td,table.ca-meas th{font-size:11px!important;padding-left:2px!important;padding-right:2px!important}}@media (max-width:1260px){table.ca-fix td,table.ca-fix th,table.ca-meas td,table.ca-meas th{font-size:11px!important;padding-left:3px!important;padding-right:3px!important}}@media (max-width:1160px){table.ca-fix td,table.ca-fix th,table.ca-meas td,table.ca-meas th{font-size:10.5px!important;padding-left:2px!important;padding-right:2px!important}}table.ca-fix td,table.ca-fix th{overflow:hidden;white-space:nowrap}table.ca-fix td.l,table.ca-fix th.l{white-space:normal!important;text-overflow:clip!important;overflow:visible!important;word-break:keep-all;overflow-wrap:anywhere}table.ca-fix th small{display:block}table.ca-meas td,table.ca-meas th{white-space:nowrap!important}';document.head.appendChild(st);
   function grid(t){ // 머리글 행들을 논리 열로 펼침 → 각 열의 '가장 아래' 머리글 칸
     var rows=t.tHead?t.tHead.rows:[], occ=[], cols=[];
     for(var r=0;r<rows.length;r++){var c=0;occ[r]=occ[r]||[];
@@ -20,7 +20,7 @@
     var _dr=[].slice.call(document.querySelectorAll('tr.detail-row'));_dr.forEach(function(r){r.style.display='none'});   /*DETHIDE*/
     try{
       var tabs=[].slice.call(document.querySelectorAll('table')).filter(function(t){
-        if(t.querySelector(':scope>colgroup:not([data-auto])')||t.classList.contains('mt')||t.closest('.tp-detail'))return false;
+        if(t.querySelector(':scope>colgroup:not([data-auto])')||t.classList.contains('mt')||t.classList.contains('it')||t.closest('.tp-detail'))return false;
         var g=grid(t);return g.filter(isM).length>=6});
       var groups=new Map();
       tabs.forEach(function(t){if(!t.offsetParent)return;var s=scope(t);if(!groups.has(s))groups.set(s,[]);groups.get(s).push(t)});
@@ -109,3 +109,5 @@
   new MutationObserver(function(ms){if(busy)return;for(var i=0;i<ms.length;i++){var n=ms[i].target;if(n.nodeName==='COLGROUP'||n.nodeName==='COL'||n.nodeName==='TABLE')continue;later();return}})
     .observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['class','open','hidden']});
 })();
+
+;(function(){function go(){if(!document.getElementById('s4')||!document.getElementById('pop'))return;document.querySelectorAll('.kpis .kpi').forEach(function(k){var l=k.querySelector('.label');if(!l||l.textContent.trim().indexOf('대기 MM')!==0||k.classList.contains('go-idle'))return;k.classList.add('go-idle');k.title='눌러서 대기 인력 현황으로 이동';k.addEventListener('click',function(){var t=document.getElementById('s4');t.scrollIntoView({behavior:'smooth',block:'start'})})})}go();window.addEventListener('load',go)})();

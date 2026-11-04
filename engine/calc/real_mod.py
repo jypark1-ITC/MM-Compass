@@ -179,7 +179,7 @@ def confirm_section():
       <div class="kpi fix alt"><div class="label">가득률<i>비매출 모수 제외</i></div><div class="value">{D["gn"][m]:.2f}<small>%</small></div><div class="kg">{_ag(D["gn"][m], None, _GC, 150, True)}</div></div>
       <div class="kpi fix"><div class="label">가동률</div><div class="value">{D["u"][m]:.2f}<small>%</small></div><div class="kg">{_ag(D["u"][m], None, _UC, 150, True)}</div></div>
       <div class="kpi fix"><div class="label">투입 MM</div><div class="value">{inp(D):.2f}<small>/ {D["T"][m]:.2f}</small></div></div>
-      <div class="kpi fix"><div class="label">대기 MM</div><div class="value">{D["idle"][m]:.2f}<small>MM · {sum(1 for p in PP.values() if p["idle"][m] > 0.005)}명</small></div><div class="ytd">명단: 04 대기 인력 {PM}월 열</div></div>
+      <div class="kpi fix"><div class="label">대기 MM</div><div class="value">{D["idle"][m]:.2f}<small>MM · {sum(1 for p in PP.values() if p["idle"][m] > 0.005)}명</small></div><div class="ytd"><span class="kgo">대기 인력 상세 보기 ›</span></div></div>
     </div>
     <details class="conf-more">
       <summary>본부별 {PM}월 실적 보기</summary>
@@ -297,7 +297,7 @@ def annual_view(ic):
              '<script>document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("button[data-afold]");if(!b)return;var s=document.getElementById("a4");'
              'var f=s.classList.toggle("fold-old");b.setAttribute("aria-pressed",f?"true":"false");var n=+b.dataset.old;'
              'b.textContent=f?"1~"+n+"월 펼치기":"1~"+n+"월 접기";var g=s.querySelector("th.grp-c");if(g)g.colSpan=+b.dataset.afold-(f?n:0);window.dispatchEvent(new Event("resize"))});'
-             'window.__ca_after=function(){document.querySelectorAll("#s4.fold-old details.grp[open] .scroll>table").forEach(function(t){var cg=t.querySelector(":scope>colgroup[data-auto]");if(!cg||!t.offsetParent)return;var cols=cg.children,k=cols.length-2,sc=t.parentNode,cs=getComputedStyle(sc),avail=sc.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0),sum=0;for(var i=0;i<cols.length;i++){if(getComputedStyle(cols[i]).display==="none")continue;sum+=parseFloat(cols[i].style.width)||0}if(sum<avail-4){cols[k].style.width=((parseFloat(cols[k].style.width)||0)+avail-sum)+"px";t.style.width=avail+"px";t.style.minWidth=avail+"px"}})};</script>')
+             'window.__ca_after=function(){document.querySelectorAll("#s4 details.grp[open] .scroll>table").forEach(function(t){var cg=t.querySelector(":scope>colgroup[data-auto]");if(!cg||!t.offsetParent)return;var cols=cg.children,k=cols.length-2,sc=t.parentNode,cs=getComputedStyle(sc),avail=sc.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0),sum=0;for(var i=0;i<cols.length;i++){if(getComputedStyle(cols[i]).display==="none")continue;sum+=parseFloat(cols[i].style.width)||0}if(sum<avail-4){cols[k].style.width=((parseFloat(cols[k].style.width)||0)+avail-sum)+"px";t.style.width=avail+"px";t.style.minWidth=avail+"px"}})};</script>')
     a4 = f'''<section class="card-sec" id="a4">{_fcss}
     <div class="sec-head"><span class="sec-no">04</span><h2>2026년 본부별 가득률</h2><span class="sub">가득률(%) = 이행 ÷ 가동대상 · 회색 음영 = 예상 · 파란 테두리 = 당월({CM}월) · 본부를 누르면 사업부·팀, 조직을 누르면 월별 실적(MM)</span>{_fold}</div>
     <div class="scroll"><table class="mtab">
@@ -805,7 +805,7 @@ _FOLD_CSS = ('<style>section.fold-old td.old,section.fold-old th.old{display:non
              '<script>document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("button[data-fold]");if(!b)return;'
              'var s=b.closest("section");var f=s.classList.toggle("fold-old");b.setAttribute("aria-pressed",f?"false":"true");'
              'b.textContent=b.textContent.replace(f?"접기":"펼치기",f?"펼치기":"접기");window.dispatchEvent(new Event("resize"))});'
-             'window.__ca_after=function(){document.querySelectorAll("#s4.fold-old details.grp[open] .scroll>table").forEach(function(t){var cg=t.querySelector(":scope>colgroup[data-auto]");if(!cg||!t.offsetParent)return;var cols=cg.children,k=cols.length-2,sc=t.parentNode,cs=getComputedStyle(sc),avail=sc.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0),sum=0;for(var i=0;i<cols.length;i++){if(getComputedStyle(cols[i]).display==="none")continue;sum+=parseFloat(cols[i].style.width)||0}if(sum<avail-4){cols[k].style.width=((parseFloat(cols[k].style.width)||0)+avail-sum)+"px";t.style.width=avail+"px";t.style.minWidth=avail+"px"}})};</script>')
+             'window.__ca_after=function(){document.querySelectorAll("#s4 details.grp[open] .scroll>table").forEach(function(t){var cg=t.querySelector(":scope>colgroup[data-auto]");if(!cg||!t.offsetParent)return;var cols=cg.children,k=cols.length-2,sc=t.parentNode,cs=getComputedStyle(sc),avail=sc.clientWidth-(parseFloat(cs.paddingLeft)||0)-(parseFloat(cs.paddingRight)||0),sum=0;for(var i=0;i<cols.length;i++){if(getComputedStyle(cols[i]).display==="none")continue;sum+=parseFloat(cols[i].style.width)||0}if(sum<avail-4){cols[k].style.width=((parseFloat(cols[k].style.width)||0)+avail-sum)+"px";t.style.width=avail+"px";t.style.minWidth=avail+"px"}})};</script>')
 
 # ---- 05 R&D · 내부과제 (실과제) ----
 def _s5():
@@ -1205,6 +1205,13 @@ ORG_CSS = ORG_CSS + r"""
   /* 인사 변동: 유형을 눌러도 열·쪽 너비가 변하지 않게 고정 */
   html{scrollbar-gutter:stable}
   #s2 .panel>table{table-layout:fixed;width:100%}
+  .pop{position:fixed!important;top:calc(var(--hdr) - 4px)!important;max-height:calc(100vh - var(--hdr) - 20px);overflow:auto}#s4{scroll-margin-top:96px}.kpi.go-idle{cursor:pointer}.kpi.go-idle:hover{border-color:var(--steel)}.kpi .kgo{color:var(--steel);font-weight:700;font-size:13px}
+  .kpis .kpi .label{font-size:17px!important;font-weight:800!important;color:var(--navy)!important;letter-spacing:-.01em}
+  .kpis .kpi.alt .label{color:var(--steel)!important}
+  .kpis .kpi .label i{font-size:12.5px!important;font-weight:700!important}
+  .kpis .kpi .value{font-size:17pt!important}
+  .kpis .kpi .value small{font-size:14px!important}
+  .kpis .kpi .ytd,.kpis .kpi .cmp{font-size:13px!important}
   #s2 .panel{overflow-x:hidden}
   #s2 table th:nth-child(1){width:68px}#s2 table th:nth-child(2){width:78px}#s2 table th:nth-child(4){width:124px}#s2 table td:nth-child(4){overflow-wrap:normal}#s2 table th:nth-child(5){width:70px}#s2 table th:nth-child(6){width:62px}#s2 table th:nth-child(7){width:15%}#s2 table th:nth-child(8){width:11%}
   #s2 table td{white-space:normal;word-break:keep-all;overflow-wrap:anywhere}

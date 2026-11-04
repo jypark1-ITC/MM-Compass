@@ -507,6 +507,30 @@ def init_app(app):
                 if em and ("@" not in em or " " in em): flash("메일 주소 형식을 확인해 주세요.")
                 else:
                     d.execute("UPDATE users SET email=? WHERE id=?", (em, int(request.form.get("id")))); d.commit(); flash("메일 주소를 저장했습니다.")
+            elif act == "setrole":
+                uid = int(request.form.get("id")); role = request.form.get("role"); dept = request.form.get("dept", "")
+                u_ = d.execute("SELECT * FROM users WHERE id=? AND active<>-1", (uid,)).fetchone()
+                if not u_: flash("계정을 찾지 못했습니다.")
+                elif uid == g.user["id"]: flash("본인 역할은 바꿀 수 없습니다. (스스로 관리자 권한을 잃는 것을 막기 위해)")
+                elif role not in ROLES: flash("역할을 골라 주세요.")
+                elif role == u_["role"]: flash("이미 그 역할입니다.")
+                elif u_["role"] == "admin" and d.execute("SELECT COUNT(*) FROM users WHERE role='admin' AND active=1 AND id<>?", (uid,)).fetchone()[0] == 0:
+                    flash("마지막 관리자입니다. 다른 관리자가 있어야 역할을 바꿀 수 있습니다.")
+                elif role == "uploader" and not (dept or u_["dept"]): flash("업로드 담당자로 바꾸려면 담당 부서를 함께 골라 주세요.")
+                else:
+                    nd = (dept or u_["dept"]) if role == "uploader" else ""
+                    d.execute("UPDATE users SET role=?, dept=?, depts=? WHERE id=?", (role, nd, json.dumps([nd], ensure_ascii=False) if nd else "", uid)); d.commit()
+                    flash(f"{u_['username']} 역할을 {ROLES[u_['role']]} → {ROLES[role]}(으)로 바꿨습니다."); db.audit(g.user["username"], "user_role", f"{u_['username']} {u_['role']}→{role}")
+            elif act == "delete":
+                uid = int(request.form.get("id"))
+                u_ = d.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
+                if not u_: flash("계정을 찾지 못했습니다.")
+                elif uid == g.user["id"]: flash("본인 계정은 삭제할 수 없습니다.")
+                elif u_["role"] == "admin" and u_["active"] == 1 and d.execute("SELECT COUNT(*) FROM users WHERE role='admin' AND active=1 AND id<>?", (uid,)).fetchone()[0] == 0:
+                    flash("마지막 관리자는 삭제할 수 없습니다.")
+                else:
+                    d.execute("DELETE FROM users WHERE id=?", (uid,)); d.commit()
+                    flash(f"{u_['username']} 계정을 삭제했습니다. (이 계정이 올린 파일·기록은 그대로 남습니다)"); db.audit(g.user["username"], "user_delete", f"{u_['username']} ({u_['role']})")
             elif act in ("deactivate", "activate"):
                 uid = int(request.form.get("id"))
                 if uid == g.user["id"]: flash("본인 계정은 끌 수 없습니다.")
