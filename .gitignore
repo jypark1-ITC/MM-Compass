@@ -17,3 +17,6 @@ __pycache__/
 *.xls
 *.pkl
 engine/.fmtcache.json
+
+# 실데이터가 든 배포용·전달용 압축 파일
+*.zip

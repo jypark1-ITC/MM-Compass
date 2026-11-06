@@ -642,6 +642,12 @@ def quit_txt(p):
     if x and x[0] == "퇴사": return f"퇴사({x[1]:%y.%m.%d})"
     return None
 
+def quit_tag(p):
+    """당월 일부 근무 후 퇴사한 사람의 이름 옆 표시문구 'yy.mm.dd 퇴사'"""
+    x = LEAVE.get((p["corp"], p["gid"]))
+    if x and x[0] == "퇴사": return f"{x[1]:%y.%m.%d} 퇴사"
+    return None
+
 def trans_note(p):  # TRN_V1
     """중간에 팀을 옮긴 사람: '9월 전배 · 이전팀 → 현재팀' (대기 인력 비고에 표시)"""
     tm = p.get("tmT") or {}
@@ -718,7 +724,8 @@ def _s4():
             badge = '<span class="streak s3">연말까지</span>' if all(v > 0.005 for v in ms) and not p["exec"] else ""
             tag = '<span class="exec-tag">사업부장</span>' if p["exec"] else ""
             lv = leave_of(p)
-            if not lv and quit_txt(p): st = ("퇴사", "p-quit")   # 당월 일부 근무 후 퇴사: 상태도 '퇴사' (합계·미투입 집계는 그대로)
+            if not lv and quit_txt(p):   # 당월 일부 근무 후 퇴사: 상태도 '퇴사', 이름 옆에 퇴사일 표시 (합계·미투입 집계는 그대로)
+                st = ("퇴사", "p-quit"); tag += f'<span class="leave-tag lt-quit">{quit_tag(p)}</span>'
             if lv: st = (lv[0], "p-quit" if lv[0] == "퇴사" else "p-leave"); tag += f'<span class="leave-tag {"lt-quit" if lv[0] == "퇴사" else "lt-leave"}">{lv[1]}</span>'
             cells = "".join(f'<td class="{"na " if p["T"][i] <= 0.005 else ("zero " if v <= 0.005 else "")}{"old " if i < CUR - 1 else ""}{"conf" if i < CUR else ("cm" if i == CUR else "fut")}">{"" if p["T"][i] <= 0.005 else "%.2f" % v}</td>' for i, v in enumerate(p["idle"]))
             plan = _next_plan(p)
@@ -1030,7 +1037,7 @@ IDLE = {}
 for p in split_people():
     k = _TK.get((p["corp"], p["hq"], p["dv"], p["tm"]))
     if not k or sum(p["idle"]) <= 0.005: continue
-    IDLE.setdefault(k, []).append(dict(n=p["name"], j=p["직무"] or "", e=bool(p["exec"]), l=(leave_of(p) or (None, ""))[1], g=p["직급"] or "", v=[round(x, 4) for x in p["idle"]], a=[1 if x > 0.005 else 0 for x in p["T"]]))
+    IDLE.setdefault(k, []).append(dict(n=p["name"], j=p["직무"] or "", e=bool(p["exec"]), l=(leave_of(p) or (None, quit_tag(p) or ""))[1], g=p["직급"] or "", v=[round(x, 4) for x in p["idle"]], a=[1 if x > 0.005 else 0 for x in p["T"]]))
 for k in IDLE: IDLE[k].sort(key=lambda x: x["n"])
 ORG_JS = ORG_JS.replace("const ORG=__ORG__;", "const ORG=__ORG__; const IDLE=" + _json.dumps(IDLE, ensure_ascii=False) + ";")
 ORG_JS = ORG_JS.replace("box.innerHTML=orgDetail(card.dataset.org);", "box.innerHTML=orgDetail(card.dataset.org)+idleList(card.dataset.org);")
