@@ -60,6 +60,10 @@ def resolve_inputs(storage, label, exclude_id=None):
         if role:
             info["short"] = f"{RL.SHORT_NAME.get(role, '')}({date})" if role.startswith("plan_") else None
             pick[role] = info
+            if role.startswith("plan_") and role != "plan_hb":   # 사업부·본부 전체 파일을 새로 올렸으면, 그보다 먼저 올린 팀·부서 단위 파일은 낡은 것 → 우선순위에서 뺌
+                _c, _h, _d, _t = RL.split_dept(dept)
+                for k in [k for k, d in dept_files.items() if _h and k[0] == _c and k[1] == _h and (not _d or k[2] == _d) and d.get("at", "") < info["at"]]:
+                    dept_files.pop(k)
             if role == "plan_hb": pick["plan_hb2"] = dict(info)       # 하반기 총괄은 최신본 하나로
             if role == "stats": pick["stats_base"] = dict(info)       # 통계 파일은 조직 구조에도 최신본 사용
         else:

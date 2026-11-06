@@ -246,6 +246,7 @@ corp_line = '<div class="ycg-t" style="text-align:center;margin-bottom:2px">법�
 def status(p):
     lv = X.leave_of(p)
     if lv: return (lv[0], "st-leave")
+    if X.quit_txt(p): return ("퇴사", "st-leave")   # 당월 일부 근무 후 퇴사
     if p["exec"]: return ("비매출 모수", "st-mid")
     ms = p["idle"][P10:12]; i0, iL = ms[0], ms[-1]
     if sum(ms) <= 0.005: return (f"{P10 + 1}월 투입", "st-ok")
@@ -271,7 +272,7 @@ def _prow(p):
     plan = X._next_plan(p)
     ps = (plan[0][1] + (f" 외 {len(plan)-1}건" if len(plan) > 1 else "")) if plan else (X.quit_txt(p) or "미정")
     if p.get("idle_note"): ps = str(p["idle_note"]).strip()
-    return (f'<tr data-a="{p["idle"][P9]:.4f}" data-b="{p["idle"][P10]:.4f}" data-mon="{sum(1 for v in p["idle"][:P10 + 1] if v >= 0.5)}"{" data-exec=1" if p["exec"] else ""}><td class="l">{E(p["name"])}</td><td class="l">{X._org_br(E(p["org"]))}</td><td class="l">{E(p["직무"] or "—")}</td><td class="l">{E(p["직급"] or "—")}</td>'
+    return (f'<tr data-a="{p["idle"][P9]:.4f}" data-b="{p["idle"][P10]:.4f}" data-mon="{sum(1 for v in p["idle"][:P10 + 1] if v >= 0.5)}" data-job="{E((p["직무"] or "").lower())}"{" data-exec=1" if p["exec"] else ""}><td class="l">{E(p["name"])}</td><td class="l">{X._org_br(E(p["org"]))}</td><td class="l">{E(p["직무"] or "—")}</td><td class="l">{E(p["직급"] or "—")}</td>'
             + "".join(f'<td class="old {"na" if p["T"][m] <= 0.005 else ("z" if p["idle"][m] <= 0.005 else "")}">{"" if p["T"][m] <= 0.005 else "%.2f" % p["idle"][m]}</td>' for m in OLD)
             + "".join(f'<td class="{"na" if p["T"][m] <= 0.005 else ("z" if p["idle"][m] <= 0.005 else "")}{" cm" if m == P10 else ""}">{"" if p["T"][m] <= 0.005 else "%.2f" % p["idle"][m]}</td>' for m in IM)
             + f'<td class="l pj" title="{E(ps)}">{E(ps)}{X.trn_html(p)}</td><td><span class="st {st[1]}">{E(st[0])}</span></td></tr>')
@@ -462,6 +463,7 @@ ul.sum{font-size:17px!important;line-height:2.25!important}.gc svg{width:100%;ma
 table.ht tr.hq.hsel td,table.ht tr.sub.hsel2 td{background:#E8EFF8!important}
 .up{color:var(--rise);font-weight:700}.dn{color:var(--fall);font-weight:700}.fl{color:var(--muted)}
 #gdet>div:nth-child(2){flex:0 0 clamp(480px,24vw,1100px)!important}#gdet>div:nth-child(2) svg{width:100%;max-width:100%;height:auto}.gtr svg{max-width:clamp(560px,28vw,1200px)}#gdet .sgl{max-width:clamp(560px,28vw,1200px)}
+body #gdet.on{justify-content:stretch;gap:0}body #gdet.on>div:nth-child(2){flex:1 1 0!important;min-width:0;display:flex;align-items:center;justify-content:center}body #gdet.on>div:nth-child(2) svg{width:100%;max-width:clamp(560px,30vw,1300px)}body #gdet.on>div:nth-child(3){flex:1 1 0;min-width:0}body #gdet.on>div:nth-child(3)>*{width:min(100%,clamp(600px,34vw,1500px));margin-left:auto;margin-right:auto;box-sizing:border-box}
 @media print{#gdet{display:none!important}}
 
 @media print{.top,.tg,.tip{display:none!important}tr.sub{display:table-row!important}.deck{position:static}.slide{display:block!important;position:static;page-break-after:always;overflow:visible;padding:14mm}
@@ -506,20 +508,20 @@ window.addEventListener('beforeprint',()=>{document.querySelectorAll('.slide').f
 const h=parseInt((location.hash||'').replace('#s',''));go(isNaN(h)?0:h-1);
 """
 JSF = r"""
-(function(){const ex=document.getElementById('mex'),ld=document.getElementById('mld'),sl=document.querySelectorAll('.slide')[3];if(!ex||!sl)return;
+(function(){const ex=document.getElementById('mex'),ld=document.getElementById('mld'),jb=document.getElementById('mjob'),sl=document.querySelectorAll('.slide')[3];if(!ex||!sl)return;
 const hdrs=[...sl.querySelectorAll('tr.tmh td, details>summary')];const orig=new Map();hdrs.forEach(h=>orig.set(h,h.innerHTML));
 const f2=v=>v.toFixed(2);
 function setH(h,rows){const sum=k=>rows.reduce((a,r)=>a+(+r.dataset[k]),0);const q=c=>h.querySelector(c);
  const a=q('.m9'),b=q('.m10'),n=q('.mn');if(a)a.textContent=f2(sum('a'));if(b)b.textContent=f2(sum('b'));if(n)n.textContent=rows.length;const cb=q('.cbbase');if(cb)cb.style.display='none'}
-function run(){const hideEx=!ex.checked,minM=+ld.value,act=hideEx||minM>0;
- const all=[...sl.querySelectorAll('tr[data-b]')];all.forEach(r=>r.classList.toggle('flt',act&&((hideEx&&!!r.dataset.exec)||(minM&&+r.dataset.mon<minM))));
+function run(){const hideEx=!ex.checked,minM=+ld.value,q=jb?jb.value.trim().toLowerCase().replace(/\s+/g,''):'',act=hideEx||minM>0||!!q;
+ const all=[...sl.querySelectorAll('tr[data-b]')];all.forEach(r=>r.classList.toggle('flt',act&&((hideEx&&!!r.dataset.exec)||(minM&&+r.dataset.mon<minM)||(q&&(r.dataset.job||'').replace(/\s+/g,'').indexOf(q)<0))));
  hdrs.forEach(h=>h.innerHTML=orig.get(h));
  sl.querySelectorAll('tr.tmh').forEach(t=>t.classList.remove('flt'));sl.querySelectorAll('details').forEach(d=>d.style.display='');
  if(!act)return;
  sl.querySelectorAll('tbody').forEach(tb=>{let cur=null,rs=[];const fin=()=>{if(cur){const vis=rs.filter(r=>!r.classList.contains('flt'));setH(cur.querySelector('td'),vis);cur.classList.toggle('flt',!vis.length)}};
   [...tb.children].forEach(tr=>{if(tr.classList.contains('tmh')){fin();cur=tr;rs=[]}else if(tr.dataset.b!==undefined)rs.push(tr)});fin()});
- [...sl.querySelectorAll('details')].reverse().forEach(d=>{const vis=[...d.querySelectorAll('tr[data-b]')].filter(r=>!r.classList.contains('flt'));setH(d.querySelector(':scope>summary'),vis);if(!vis.length)d.style.display='none'})}
-[ex,ld].forEach(e=>e.addEventListener('change',run))})();
+ [...sl.querySelectorAll('details')].reverse().forEach(d=>{const vis=[...d.querySelectorAll('tr[data-b]')].filter(r=>!r.classList.contains('flt'));setH(d.querySelector(':scope>summary'),vis);if(!vis.length)d.style.display='none';else if(q)d.open=true})}
+[ex,ld].forEach(e=>e.addEventListener('change',run));if(jb)jb.addEventListener('input',run)})();
 """
 JS2 = r"""
 (function(){const S2=document.querySelectorAll('.slide')[1],tb=S2.querySelector('table.ht'),box=document.getElementById('gcards'),det=document.getElementById('gdet');
@@ -722,7 +724,7 @@ page = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name
 <section class="slide"><h2>월별 가득률 · 가동률 추이</h2><div class="sub">{X.RA} 실적 · {P10 + 1}월 당월{f' · {X._cf.R(P10 + 2)} 투입계획 기준 예상' if P10 < 11 else ''}{E(X.PROV_TXT)}</div>
 <div class="s3g"><div class="ycg"><div class="ycg-t">연간 추정</div>{GA.sized(GA.pair(min(D["yu"], 100), min(D["yg"], 100), None, None, "yy"), 440)}{GAP_W}</div><div class="s3m"><div class="chart-card" id="cc">{LG}{chart}<div class="tip" id="tip" hidden></div></div><div class="note">그래프의 각 달에 마우스를 올리면 수치와 전월 대비 증감이 나옵니다.</div>{mtab}{year3_html}</div></div><div class="corp-line">{corp_line}</div></section>
 {WHY_SLIDE}
-<section class="slide"><h2>대기 인력</h2><div class="fbar"><label><input type="checkbox" id="mex" checked> 사업부장 포함</label><label>대기 기간 <select id="mld"><option value="0">전체</option>{"".join(f'<option value="{k}">누적 {k}개월 이상</option>' for k in range(1, 7))}</select></label></div><div class="sub">{P9 + 1}월({"확정" if PM_OK else "잠정"}) 또는 {P10 + 1}월(당월) 대기가 있는 인원 {n_show}명 · 단위 MM · 법인 › 본부 › 사업부 › 팀 · 사업부를 누르면 사람이 펼쳐집니다 {('<button class="tg" id="idold">' + (f'1~{P9}월 펼치기' if P9 > 1 else '1월 펼치기') + '</button>') if K_OLD else ''}<button class="tg" id="idopen">사람까지 모두 펼치기</button><button class="tg" id="idclose">사업부까지만 보기</button></div>{idle_blocks}</section>
+<section class="slide"><h2>대기 인력</h2><div class="fbar"><label><input type="checkbox" id="mex" checked> 사업부장 포함</label><label>직무 검색 <input type="search" id="mjob" placeholder="예: 개발, PM" autocomplete="off" style="width:150px"></label><label>대기 기간 <select id="mld"><option value="0">전체</option>{"".join(f'<option value="{k}">누적 {k}개월 이상</option>' for k in range(1, 7))}</select></label></div><div class="sub">{P9 + 1}월({"확정" if PM_OK else "잠정"}) 또는 {P10 + 1}월(당월) 대기가 있는 인원 {n_show}명 · 단위 MM · 법인 › 본부 › 사업부 › 팀 · 사업부를 누르면 사람이 펼쳐집니다 {('<button class="tg" id="idold">' + (f'1~{P9}월 펼치기' if P9 > 1 else '1월 펼치기') + '</button>') if K_OLD else ''}<button class="tg" id="idopen">사람까지 모두 펼치기</button><button class="tg" id="idclose">사업부까지만 보기</button></div>{idle_blocks}</section>
 <section class="slide"><h2>인사 변동</h2>
 <h3 class="sh">변동 인원 <b>{len(X.HRE)}명</b><small>{P10 + 1}월 입사 · 퇴사 · 휴직 · 복직 · 전배 · 가동대상 영향</small></h3>
 <table class="hrt"><thead><tr><th>유형</th><th class="l">성명</th><th class="l">소속 (변동)</th><th class="l">직무</th><th class="l">직급</th><th>적용일</th><th class="l">가동대상 영향</th></tr></thead><tbody>{hr_rows}</tbody></table>

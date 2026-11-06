@@ -718,12 +718,13 @@ def _s4():
             badge = '<span class="streak s3">연말까지</span>' if all(v > 0.005 for v in ms) and not p["exec"] else ""
             tag = '<span class="exec-tag">사업부장</span>' if p["exec"] else ""
             lv = leave_of(p)
+            if not lv and quit_txt(p): st = ("퇴사", "p-quit")   # 당월 일부 근무 후 퇴사: 상태도 '퇴사' (합계·미투입 집계는 그대로)
             if lv: st = (lv[0], "p-quit" if lv[0] == "퇴사" else "p-leave"); tag += f'<span class="leave-tag {"lt-quit" if lv[0] == "퇴사" else "lt-leave"}">{lv[1]}</span>'
             cells = "".join(f'<td class="{"na " if p["T"][i] <= 0.005 else ("zero " if v <= 0.005 else "")}{"old " if i < CUR - 1 else ""}{"conf" if i < CUR else ("cm" if i == CUR else "fut")}">{"" if p["T"][i] <= 0.005 else "%.2f" % v}</td>' for i, v in enumerate(p["idle"]))
             plan = _next_plan(p)
             plan_s = (f'{plan[0][1]} ({MON[plan[0][0]]}~)' if plan[0][0] > CUR else plan[0][1]) + (f' 외 {len(plan)-1}건' if len(plan) > 1 else "") if plan else (quit_txt(p) or "미정")
             plan_t = " / ".join(n for _, n, _ in plan)
-            return f'<tr{" data-leave=1" if lv else ""}{" data-cur0=1" if _quiet(p) else ""} data-name="{p["name"]}"{" data-exec=1" if p["exec"] else ""} data-mon="{sum(1 for v in p["idle"][:CUR + 1] if v >= 0.5)}" data-h1="{sum(p["idle"][:CUR]):.4f}" data-hp="{p["idle"][CUR - 1]:.4f}" data-hc="{p["idle"][CUR]:.4f}" data-need="{(p["idle"][CUR] if st[0] == "미투입" and not lv else 0):.4f}" data-idle="{sum(p["idle"][CUR:12]):.4f}" data-year="{sum(p["idle"]):.4f}"><td class="l">{p["name"]} {tag}{badge}</td><td class="l">{p["org"]}</td><td class="l">{p["직무"] or "—"}</td><td class="l">{p["직급"] or "—"}</td>{cells}<td class="strong">{sum(p["idle"]):.2f}</td><td class="l plan" title="{plan_t}">{plan_s}{trn_html(p)}</td><td class="c"><span class="pill {st[1]}">{st[0]}</span></td></tr>'
+            return f'<tr{" data-leave=1" if lv else ""}{" data-cur0=1" if _quiet(p) else ""} data-name="{p["name"]}" data-job="{(p["직무"] or "").lower()}"{" data-exec=1" if p["exec"] else ""} data-mon="{sum(1 for v in p["idle"][:CUR + 1] if v >= 0.5)}" data-h1="{sum(p["idle"][:CUR]):.4f}" data-hp="{p["idle"][CUR - 1]:.4f}" data-hc="{p["idle"][CUR]:.4f}" data-need="{(p["idle"][CUR] if st[0] == "미투입" and not lv else 0):.4f}" data-idle="{sum(p["idle"][CUR:12]):.4f}" data-year="{sum(p["idle"]):.4f}"><td class="l">{p["name"]} {tag}{badge}</td><td class="l">{p["org"]}</td><td class="l">{p["직무"] or "—"}</td><td class="l">{p["직급"] or "—"}</td>{cells}<td class="strong">{sum(p["idle"]):.2f}</td><td class="l plan" title="{plan_t}">{plan_s}{trn_html(p)}</td><td class="c"><span class="pill {st[1]}">{st[0]}</span></td></tr>'
 
         hnode = next(h for c in RT["corps"] if c["name"] == cn for h in c["hqs"] if h["name"] == hq)
         order = [(dv["name"], t["raw"], t["name"], dv["name"]) for dv in hnode["divs"] for t in dv["teams"]]
@@ -773,7 +774,7 @@ def _s4():
       <button role="tab" aria-selected="false" data-f="entec">아이티센엔텍</button>
       <span class="tools">{f'<button data-fold="1" aria-pressed="false">1~{CUR - 1}월 펼치기</button>' if CUR > 1 else ''}<button data-act="csv">엑셀 다운로드</button><button data-act="open">모두 펼치기</button><button data-act="close">모두 접기</button></span>
     </div>
-    <div class="sort-bar"><em>정렬</em><button data-sort="name" aria-pressed="true">이름순</button><button data-sort="idle" aria-pressed="false">{RQ} 대기 많은순</button><button data-sort="year" aria-pressed="false">연간 대기 많은순</button><label class="lv-toggle"><input type="checkbox" id="cur0Show"> {PM}월(전월)·{CM}월(당월) 대기 없는 인원도 표시</label><label class="lv-toggle"><input type="checkbox" id="lvShow" checked> 휴직·퇴사자 포함</label><label class="lv-toggle"><input type="checkbox" id="exShow" checked> 사업부장 포함</label><label class="lv-toggle">대기 기간 <select id="ldSel"><option value="0">전체</option><option value="1">누적 1개월 이상</option><option value="2">누적 2개월 이상</option><option value="3">누적 3개월 이상</option><option value="4">누적 4개월 이상</option><option value="5">누적 5개월 이상</option><option value="6">누적 6개월 이상</option></select></label><span class="grp-toggle"><em>팀 묶음</em><button data-g="open">모두 펼치기</button><button data-g="close">모두 접기</button></span></div>
+    <div class="sort-bar"><em>정렬</em><button data-sort="name" aria-pressed="true">이름순</button><button data-sort="idle" aria-pressed="false">{RQ} 대기 많은순</button><button data-sort="year" aria-pressed="false">연간 대기 많은순</button><label class="lv-toggle"><input type="checkbox" id="cur0Show"> {PM}월(전월)·{CM}월(당월) 대기 없는 인원도 표시</label><label class="lv-toggle"><input type="checkbox" id="lvShow" checked> 휴직·퇴사자 포함</label><label class="lv-toggle"><input type="checkbox" id="exShow" checked> 사업부장 포함</label><label class="lv-toggle">직무 검색 <input type="search" id="jobQ" placeholder="예: 개발, PM" autocomplete="off" style="width:150px"></label><label class="lv-toggle">대기 기간 <select id="ldSel"><option value="0">전체</option><option value="1">누적 1개월 이상</option><option value="2">누적 2개월 이상</option><option value="3">누적 3개월 이상</option><option value="4">누적 4개월 이상</option><option value="5">누적 5개월 이상</option><option value="6">누적 6개월 이상</option></select></label><span class="grp-toggle"><em>팀 묶음</em><button data-g="open">모두 펼치기</button><button data-g="close">모두 접기</button></span></div>
     <div class="note st-legend">상태: <b>미투입</b> {RQ} 계속 대기 (투입 0) · 헤더의 「연말까지 투입 없음」 = 이 상태 인원의 {CM}월 대기 MM · <b>부분 투입</b> 투입은 있으나 1.00 미만{f' · <b>투입 예정</b> {CM}월 대기 후 12월엔 투입 · <b>종료 후 대기</b> {CM}월 투입, 이후 대기 예정' if CM < 12 else ''} · <b>{CM}월 투입</b> {PM}월 대기 후 {CM}월부터 투입 · <b>비매출 모수</b> 사업부장</div>
     <div class="note st-legend st-legend2"><span class="leave-tag lt-quit">퇴사</span> <span class="leave-tag lt-leave">휴직</span> {CM}월 가동대상 0 (휴직·퇴사 전 달의 대기는 실적이므로 합계에 포함)</div>
     <div id="idle" class="hide-cur0" data-search>{html_g}
@@ -1155,16 +1156,17 @@ ORG_JS = ORG_JS + r"""
 // ---- 대기 인력: 사업부장 제외 · 누적 대기 기간 필터 (합계 재계산) ----
 (function(){
   const box=document.getElementById('idle'); if(!box) return;
-  const ex=document.getElementById('exShow'), ld=document.getElementById('ldSel');
+  const ex=document.getElementById('exShow'), ld=document.getElementById('ldSel'), jq=document.getElementById('jobQ');
   const ids=['sc-conf','sc-all','sc-cl','sc-et','sc-need'], cls=['gm-n','gm-h1','gm-hp','gm-hc','gm-need'];
   const orig=new Map();
   ids.forEach(i=>{const e=document.getElementById(i); if(e) orig.set(e,e.innerHTML)});
   box.querySelectorAll('details.grp .gv').forEach(e=>orig.set(e,e.innerHTML));
   const f2=v=>v.toFixed(2);
   function apply(){
-    const hideEx=ex&&!ex.checked, minM=ld?+ld.value:0, active=hideEx||minM>0;
+    const hideEx=ex&&!ex.checked, minM=ld?+ld.value:0, q=jq?jq.value.trim().toLowerCase().replace(/\s+/g,''):'', active=hideEx||minM>0||!!q;
     const rows=[...box.querySelectorAll('tr[data-name]')];
-    rows.forEach(r=>r.classList.toggle('flt',!!((hideEx&&r.dataset.exec)||(minM&&(+r.dataset.mon<minM)))));
+    rows.forEach(r=>r.classList.toggle('flt',!!((hideEx&&r.dataset.exec)||(minM&&(+r.dataset.mon<minM))||(q&&(r.dataset.job||'').replace(/\s+/g,'').indexOf(q)<0))));
+    if(q) box.querySelectorAll('details.grp').forEach(d=>{if([...d.querySelectorAll('tr[data-name]')].some(r=>!r.classList.contains('flt'))) d.open=true});
     if(!active){orig.forEach((h,e)=>e.innerHTML=h); return}
     const A={conf:[0,0],all:[0,0],cl:[0,0],et:[0,0],need:[0,0]};
     box.querySelectorAll('details.grp').forEach(d=>{
@@ -1185,6 +1187,7 @@ ORG_JS = ORG_JS + r"""
     if(typeof idleFilter==='function') idleFilter();
   }
   [ex,ld].forEach(e=>e&&e.addEventListener('change',()=>{apply(); if(typeof idleFilter==='function') idleFilter()}));
+  if(jq) jq.addEventListener('input',()=>{apply(); if(typeof idleFilter==='function') idleFilter()});
 }).call(this);
 """.replace("__CM__", str(CM))
 ORG_CSS = ORG_CSS + r"""

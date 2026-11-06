@@ -121,6 +121,17 @@ def is_hq_rolling(path, dept):
     try: return RL.detect_format(path) == "rolling"
     except Exception: return False
 
+def should_split(path, dept):
+    """인력롤링 양식 + 클로잇 본부·사업부 단위(팀 하나를 고른 게 아님)면 체크 없이 자동으로 팀별 분리.
+    AX 가득가동현황·DX·MSP 같은 독자 양식, 하반기 총괄, 엔텍 파일은 나누지 않고 부서 파일 그대로 등록."""
+    from engine import roles as RL
+    if not dept or dept == RL.HB_DEPT: return False
+    if dept == ALL: return True
+    corp, hq, dv, tm = RL.split_dept(dept)
+    if corp != RL.CLO or not hq or tm: return False
+    try: return RL.detect_format(path) == "rolling"
+    except Exception: return False
+
 def is_team_template(path):
     """우리 사이트에서 받은 '여러 팀 한 시트' 템플릿인지 (숨은 _gadong 시트의 mode=teams)"""
     import openpyxl
@@ -283,7 +294,7 @@ def init_app(app):
                     if os.path.exists(tmp): os.remove(tmp)
             else: fs.save(path)
             size = os.path.getsize(path)
-            if kind == "plan" and (request.form.get("split") == "1" or dept == ALL or is_team_template(path) or is_hq_rolling(path, dept)):
+            if kind == "plan" and (request.form.get("split") == "1" or should_split(path, dept) or is_team_template(path) or is_hq_rolling(path, dept)):
                 ids, info = split_register(u, current_app.config["STORAGE"], path, os.path.basename(fs.filename), dept, wlabel, wtitle)
                 safe_remove(path)
                 if not ids: flash(f"팀별로 나눌 수 없습니다: {info}"); return redirect(url_for("upload"))
